@@ -1,0 +1,24 @@
+<div class="sidebar pure-u">
+    <div class="cover-img" style="background-color: #{{ COVER_BG_COLOR }};">
+        <div class="cover-body">
+            <header class="header">
+                <hgroup>
+                    <h1 class="brand-main"><a href="/">{{ SITE_TITLE }}</a></h1>
+                    <p class="tagline">{{ TAGLINE }}</p>
+                    {% for p in pages %}
+                    {% if p.menu %}
+                    <p class="links"><a href="{{ p.url }}">{{ p.title }}</a></p>
+                    {% endif %}
+                    {% endfor %}
+                    <p class="social">
+                        {% for s in SOCIAL %}
+                        <a href="{{ SOCIAL[s] }}">
+                            <i class="fa fa-{{ s }} fa-3x"></i>
+                        </a>
+                        {% endfor %}
+                    <p>
+                </hgroup>
+            </header>
+        </div>
+    </div>
+</div>
