@@ -10,6 +10,8 @@ Ceux qui me connaissent savent que ce n'est pas la première fois que je créé 
 
 Mon premier site remonte à plusieurs années : il s'agissait d'un blog proposant des articles sur l'univers de l'Open source, notamment Linux. J'ai ensuite créé un blog perso, parlant de sécurité informatique, et enfin un autre sur le Cloud Computing.
 
+[--MORE--]
+
 Alors pourquoi un quatrième ? D'abord pour garder une trace de mes recherches. Etant développeur Python, je passe du temps sur `Github <https://github.com/ncrocfer>`_, `StackOverflow <http://stackoverflow.com/users/663949/ncrocfer>`_ ou encore `Twitter <https://twitter.com/ncrocfer>`_ pour effectuer ma veille et trouver les réponses à mes questions. Je note pas mal de choses dans un dokuwiki local, je me dis que ça ne peut pas faire de mal de partager ces notes.
 
 Ensuite parce que je me suis amusé à développer un générateur statique de blog, et que le meilleur moyen de le tester est de l'éprouver en conditions réelles.
