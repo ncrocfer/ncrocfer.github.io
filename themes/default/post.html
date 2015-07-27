@@ -1,10 +1,6 @@
 {% extends 'base.html' %}
 {% block title %}{{ post.title|striptags }} // {{ super() }}{% endblock title %}
 
-{% block head_css %}
-<link rel="stylesheet" href="{{ SITE_URL }}/css/pygments.css">
-{% endblock %}
-
 {% block head_js %}
 <script src="//cdnjs.cloudflare.com/ajax/libs/fitvids/1.0.1/jquery.fitvids.min.js"></script>
 <script>
