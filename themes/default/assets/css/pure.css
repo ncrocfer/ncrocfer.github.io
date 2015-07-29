@@ -30,6 +30,8 @@ pre {
     font-size: 75%;
     box-shadow: 2px 2px 2px #888;
     font-family: monospace, sans-serif;
+    white-space: pre;
+    overflow: auto;
 }
 
 code {
