@@ -25,6 +25,7 @@ authors:
 # Pure theme
 tagline: 'Python & Web security'
 cover_bg_color: 0D302E
+google_analytics: UA-65778407-1
 social:
     github: https://github.com/ncrocfer
     twitter-square: https://twitter.com/ncrocfer
