@@ -6,7 +6,7 @@
     <meta name="description" content="ncrocfer, Python & Web security">
 
     
-    <title>ncrocfer // Python & Web security</title>
+    <title>Créer une commande personnalisée pour Git // ncrocfer // Python & Web security</title>
     
 
     
@@ -19,6 +19,13 @@
 
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
     
+<script src="//cdnjs.cloudflare.com/ajax/libs/fitvids/1.0.1/jquery.fitvids.min.js"></script>
+<script>
+        $(document).ready(function(){
+            $(".content").fitVids();
+        });
+    </script>
+
 </head>
 
 <body>
@@ -52,58 +59,63 @@
         </div>
     </div>
 </div>
-    <div class="pure-u-1">
+    <div class="pure-u">
         <div class="content">
-            <div class="posts">
-                <h1 class="content-subhead">
-                    Posts
-                </h1>
-                
-                <section class="post">
-                    <header class="post-header">
-                        <h3><a class="post-title" href="https://ncrocfer.github.io/2015/08/03/creer-une-commande-personnalisee-pour-git">Créer une commande personnalisée pour Git</a></h3>
-                        <div class="document">
+            <section class="post">
+                <header class="post-header">
+                    <h1>Créer une commande personnalisée pour Git</h1>
+                    
+                        <p class="post-meta">
+                            
+                                category:
+                            
+                            
+                                <a href="https://ncrocfer.github.io/categories/howtos">Howtos</a> 
+                            , date: Mon 03 August 2015
+                        </p>
+                    
+                    
+                        <p class="post-meta">
+                            
+                                tag =
+                            
+                            
+                                <a class="post-category" href="https://ncrocfer.github.io/tags/git">git</a>
+                            
+                        </p>
+                    
+                </header>
+            </section>
+            <div class="document">
 <p>Git est un formidable outil de versionning fournissant un nombre incroyable de fonctionnalités. Mais il peut arriver un cas particulier pour lequel aucune commande git n'apporte de solution : c'est pourquoi <strong>git</strong> propose à l'utilisateur de créer ses propres commandes personnalisées.</p>
 
-                        <p class="post-meta">
-                            
-                            in
-                            
-                            <a href="https://ncrocfer.github.io/categories/howtos">Howtos</a> &middot;
-                            
-                            
-                            Mon 03 August 2015
-                        </p>
-                    </header>
-                </section>
-                
-                <section class="post">
-                    <header class="post-header">
-                        <h3><a class="post-title" href="https://ncrocfer.github.io/2015/07/23/hello-world">Hello world</a></h3>
-                        <div class="document">
-<p>Ceux qui me connaissent savent que ce n'est pas la première fois que je créé un blog, et je me lance donc à nouveau dans la rédaction d'articles.</p>
-<p>Mon premier site remonte à plusieurs années : il s'agissait d'un blog proposant des articles sur l'univers de l'Open source, notamment Linux. J'ai ensuite créé un blog perso, parlant de sécurité informatique, et enfin un autre sur le Cloud Computing.</p>
+<p>Il m'arrive par exemple de vouloir connaître le nombre de commits sur un projet. Pour cela je fais :</p>
+<div class="highlight"><pre><span class="nv">$ </span>git log --pretty<span class="o">=</span>oneline <span class="p">|</span> wc -l
+132
+</pre></div>
+<p>Ca marche mais c'est un peu long à taper à chaque fois. On peut évidemment faire un alias dans notre fichier ~/.bashrc, mais on peut également créer une commande git qui permette de faire la même chose.</p>
+<p>Pour cela on crée un fichier dans <strong>/usr/bin</strong>, par exemple <strong>git-count</strong>. Le nom des commandes personnalisées doivent être séparées par des tirets et n'ont pas d'extension. On y place le code souhaité :</p>
+<div class="highlight"><pre><span class="c">#!/bin/bash</span>
+git log --pretty<span class="o">=</span>oneline <span class="p">|</span> wc -l
+</pre></div>
+<p>N'oubliez pas de rendre ce fichier éxécutable (<strong>chmod +x</strong>). La commande est maintenant accessible depuis un repository local :</p>
+<div class="highlight"><pre><span class="nv">$ </span>git count
+132
+</pre></div>
+</div>
 
-                        <p class="post-meta">
-                            
-                            in
-                            
-                            <a href="https://ncrocfer.github.io/categories/news">News</a> &middot;
-                            
-                            
-                            Thu 23 July 2015
-                        </p>
-                    </header>
-                </section>
-                
 
-                <footer class="footer">
+            <a href="https://twitter.com/share" class="twitter-share-button" data-url="https://ncrocfer.github.io/2015/08/03/creer-une-commande-personnalisee-pour-git" data-text="Créer une commande personnalisée pour Git" data-via="ncrocfer">Tweet</a>
+            <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+
+            <div class="hr"></div>
+            <a href="#" class="go-top">Go Top</a>
+            <footer class="footer">
     <p>&copy; ncrocfer &ndash;
         Built with <a href="https://github.com/ncrocfer/radric">Radric</a>
         and a modified version of <a href="https://github.com/PurePelicanTheme/pure">Pure Theme</a>
     </p>
 </footer>
-            </div>
         </div>
     </div>
 </div>
