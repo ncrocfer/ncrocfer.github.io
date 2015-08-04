@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="en">
 <head>
@@ -7,7 +6,7 @@
     <meta name="description" content="ncrocfer, Python & Web security">
 
     
-    <title>Nicolas Crocfer category // ncrocfer // Python & Web security</title>
+    <title>Modifier le header par défaut dans docutils // ncrocfer // Python & Web security</title>
     
 
     
@@ -20,6 +19,13 @@
 
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
     
+<script src="//cdnjs.cloudflare.com/ajax/libs/fitvids/1.0.1/jquery.fitvids.min.js"></script>
+<script>
+        $(document).ready(function(){
+            $(".content").fitVids();
+        });
+    </script>
+
 </head>
 
 <body>
@@ -53,77 +59,58 @@
         </div>
     </div>
 </div>
-    <div class="pure-u-1">
+    <div class="pure-u">
         <div class="content">
-            <div class="posts">
-                <h1 class="content-subhead">
-                    Posts in 'News'
-                </h1>
-                
-                <section class="post">
-                    <header class="post-header">
-                        <h3><a class="post-title" href="https://ncrocfer.github.io/2015/08/05/modifier-le-header-par-defaut-dans-docutils">Modifier le header par défaut dans docutils</a></h3>
-                        <div class="document">
+            <section class="post">
+                <header class="post-header">
+                    <h1>Modifier le header par défaut dans docutils</h1>
+                    
+                        <p class="post-meta">
+                            
+                                category:
+                            
+                            
+                                <a href="https://ncrocfer.github.io/categories/howtos">Howtos</a> 
+                            , date: Wed 05 August 2015
+                        </p>
+                    
+                    
+                        <p class="post-meta">
+                            
+                                tag =
+                            
+                            
+                                <a class="post-category" href="https://ncrocfer.github.io/tags/python">python</a>
+                            
+                        </p>
+                    
+                </header>
+            </section>
+            <div class="document">
 <p>Je travaille actuellement sur un <a class="reference external" href="https://github.com/ncrocfer/radric">générateur statique de blog</a> qui génère les pages HTML à partir de la syntaxe <strong>reStructuredText</strong>.</p>
 <p>J'utilise pour cela <strong>docutils</strong>, et par défaut les headers (h1, h2, h3...) sont générés par ordre croissant. Si il détecte un h1, alors un header de niveau moindre deviendra h2, ensuite h3, etc.</p>
 
-                        <p class="post-meta">
-                            
-                            in
-                            
-                            <a href="https://ncrocfer.github.io/categories/howtos">Howtos</a> &middot;
-                            
-                            
-                            Wed 05 August 2015
-                        </p>
-                    </header>
-                </section>
-                
-                <section class="post">
-                    <header class="post-header">
-                        <h3><a class="post-title" href="https://ncrocfer.github.io/2015/08/03/creer-une-commande-personnalisee-pour-git">Créer une commande personnalisée pour Git</a></h3>
-                        <div class="document">
-<p>Git est un formidable outil de versionning fournissant un nombre incroyable de fonctionnalités. Mais il peut arriver un cas particulier pour lequel aucune commande git n'apporte de solution : c'est pourquoi <strong>git</strong> propose à l'utilisateur de créer ses propres commandes personnalisées.</p>
+<p>Malheureusement dans mon thème, le titre de chaque post n'est pas généré par docutils, mais apparaît directement dans un template en tant que h1. Ce qui fait que chaque titre généré par docutils par la suite sera également un h1.</p>
+<p>Pour modifier cela, il faut placer le paramètre <strong>initial_header_level</strong> à la valeur souhaitée :</p>
+<div class="highlight"><pre><span class="n">parts</span> <span class="o">=</span> <span class="n">publish_parts</span><span class="p">(</span><span class="nb">file</span><span class="o">.</span><span class="n">plaintext</span><span class="p">,</span> <span class="n">writer_name</span><span class="o">=</span><span class="s">&#39;html&#39;</span><span class="p">,</span>
+                      <span class="n">settings_overrides</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;initial_header_level&#39;</span><span class="p">:</span><span class="mi">2</span><span class="p">,})</span>
+<span class="k">return</span> <span class="n">parts</span><span class="p">[</span><span class="s">&#39;html_body&#39;</span><span class="p">]</span>
+</pre></div>
+<p>De cette façon les premiers headers seront directement générés en h2 (il faut mettre la valeur 3 pour h3, 4 pour h4, ...).</p>
+</div>
 
-                        <p class="post-meta">
-                            
-                            in
-                            
-                            <a href="https://ncrocfer.github.io/categories/howtos">Howtos</a> &middot;
-                            
-                            
-                            Mon 03 August 2015
-                        </p>
-                    </header>
-                </section>
-                
-                <section class="post">
-                    <header class="post-header">
-                        <h3><a class="post-title" href="https://ncrocfer.github.io/2015/07/23/hello-world">Hello world</a></h3>
-                        <div class="document">
-<p>Ceux qui me connaissent savent que ce n'est pas la première fois que je créé un blog, et je me lance donc à nouveau dans la rédaction d'articles.</p>
-<p>Mon premier site remonte à plusieurs années : il s'agissait d'un blog proposant des articles sur l'univers de l'Open source, notamment Linux. J'ai ensuite créé un blog perso, parlant de sécurité informatique, et enfin un autre sur le Cloud Computing.</p>
 
-                        <p class="post-meta">
-                            
-                            in
-                            
-                            <a href="https://ncrocfer.github.io/categories/news">News</a> &middot;
-                            
-                            
-                            Thu 23 July 2015
-                        </p>
-                    </header>
-                </section>
-                
+            <a href="https://twitter.com/share" class="twitter-share-button" data-url="https://ncrocfer.github.io/2015/08/05/modifier-le-header-par-defaut-dans-docutils" data-text="Modifier le header par défaut dans docutils" data-via="ncrocfer">Tweet</a>
+            <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
 
-                <footer class="footer">
+            <div class="hr"></div>
+            <a href="#" class="go-top">Go Top</a>
+            <footer class="footer">
     <p>&copy; ncrocfer &ndash;
         Built with <a href="https://github.com/ncrocfer/radric">Radric</a>
         and a modified version of <a href="https://github.com/PurePelicanTheme/pure">Pure Theme</a>
     </p>
 </footer>
-            </div>
         </div>
     </div>
 </div>
