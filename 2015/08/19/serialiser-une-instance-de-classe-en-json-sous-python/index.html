@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ncrocfer, Python & Web security">
+
+    
+    <title>Sérialiser une instance de classe en JSON sous Python // ncrocfer // Python & Web security</title>
+    
+
+    
+
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/pure/0.3.0/pure-min.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.1.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://ncrocfer.github.io/css/pure.css">
+    <link rel="stylesheet" href="https://ncrocfer.github.io/css/pygments.css">
+    
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+    
+<script src="//cdnjs.cloudflare.com/ajax/libs/fitvids/1.0.1/jquery.fitvids.min.js"></script>
+<script>
+        $(document).ready(function(){
+            $(".content").fitVids();
+        });
+    </script>
+
+</head>
+
+<body>
+
+<div class="pure-g-r" id="layout">
+    <div class="sidebar pure-u">
+    <div class="cover-img" style="background-color: #0D302E;">
+        <div class="cover-body">
+            <header class="header">
+                <hgroup>
+                    <h1 class="brand-main"><a href="/">ncrocfer</a></h1>
+                    <p class="tagline">Python & Web security</p>
+                    
+                    
+                    <p class="links"><a href="https://ncrocfer.github.io/a-propos">A propos</a></p>
+                    
+                    
+                    <p class="social">
+                        
+                        <a href="https://twitter.com/ncrocfer">
+                            <i class="fa fa-twitter-square fa-3x"></i>
+                        </a>
+                        
+                        <a href="https://github.com/ncrocfer">
+                            <i class="fa fa-github fa-3x"></i>
+                        </a>
+                        
+                    <p>
+                </hgroup>
+            </header>
+        </div>
+    </div>
+</div>
+    <div class="pure-u">
+        <div class="content">
+            <section class="post">
+                <header class="post-header">
+                    <h1>Sérialiser une instance de classe en JSON sous Python</h1>
+                    
+                        <p class="post-meta">
+                            
+                                category:
+                            
+                            
+                                <a href="https://ncrocfer.github.io/categories/howtos">Howtos</a> 
+                            , date: Wed 19 August 2015
+                        </p>
+                    
+                    
+                        <p class="post-meta">
+                            
+                                tags =
+                            
+                            
+                                <a class="post-category" href="https://ncrocfer.github.io/tags/python">python</a>
+                            
+                                <a class="post-category" href="https://ncrocfer.github.io/tags/json">json</a>
+                            
+                        </p>
+                    
+                </header>
+            </section>
+            <div class="document">
+<p>Je me suis récemment confronté pour un projet perso à devoir sérialiser une instance de classe en JSON. J'aurais très bien pu utiliser un autre type de sérialisation, comme Pickle, mais je suis habitué au JSON et je préfère rester sur ce format pour l'ensemble de mes projets.</p>
+<p>Pour la serialisation nous devons passer par la méthode <strong>JSON.dumps()</strong>. A priori rien de bien compliqué pour des types basiques (list, dict, str, bool...), mais les instances de classe ne sont pas serialisables.</p>
+
+<p>Prenons une classe toute simple :</p>
+<div class="highlight"><pre><span class="c"># -*- coding: utf-8 -*-</span>
+
+<span class="k">class</span> <span class="nc">MyClass</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var1</span> <span class="o">=</span> <span class="s">&quot;foo&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var2</span> <span class="o">=</span> <span class="s">&quot;bar&quot;</span>
+</pre></div>
+<p>Si vous essayez de sérialiser une instance de celle-ci, une exception sera levée :</p>
+<div class="highlight"><pre><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">myclass</span> <span class="kn">import</span> <span class="n">MyClass</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span> <span class="nn">json</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">obj</span> <span class="o">=</span> <span class="n">MyClass</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+<span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
+  <span class="n">File</span> <span class="s">&quot;&lt;stdin&gt;&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">1</span><span class="p">,</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
+  <span class="n">File</span> <span class="s">&quot;/usr/lib/python3.4/json/__init__.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">230</span><span class="p">,</span> <span class="ow">in</span> <span class="n">dumps</span>
+    <span class="k">return</span> <span class="n">_default_encoder</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+  <span class="n">File</span> <span class="s">&quot;/usr/lib/python3.4/json/encoder.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">192</span><span class="p">,</span> <span class="ow">in</span> <span class="n">encode</span>
+    <span class="n">chunks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">iterencode</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">_one_shot</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+  <span class="n">File</span> <span class="s">&quot;/usr/lib/python3.4/json/encoder.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">250</span><span class="p">,</span> <span class="ow">in</span> <span class="n">iterencode</span>
+    <span class="k">return</span> <span class="n">_iterencode</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+  <span class="n">File</span> <span class="s">&quot;/usr/lib/python3.4/json/encoder.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">173</span><span class="p">,</span> <span class="ow">in</span> <span class="n">default</span>
+    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">o</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot; is not JSON serializable&quot;</span><span class="p">)</span>
+<span class="ne">TypeError</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">myclass</span><span class="o">.</span><span class="n">MyClass</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7f37074c8e10</span><span class="o">&gt;</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">JSON</span> <span class="n">serializable</span>
+</pre></div>
+<p>Pour pallier à ce problème, la <a class="reference external" href="https://docs.python.org/3/library/json.html">documentation</a> suggère d'utiliser une sous-classe de <strong>json.JSONEncoder</strong> et de retourner le résultat attendu dans la méthode <strong>default()</strong>. Ce qui donne dans notre cas :</p>
+<div class="highlight"><pre><span class="k">class</span> <span class="nc">MyEncoder</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">JSONEncoder</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">default</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">MyClass</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">vars</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONEncoder</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
+</pre></div>
+<p>On spécifie ensuite cet <em>encoder</em> dans l'argument nommé <strong>cls</strong> :</p>
+<div class="highlight"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">cls</span><span class="o">=</span><span class="n">MyEncoder</span><span class="p">)</span>
+<span class="s">&#39;{&quot;var1&quot;: &quot;foo&quot;, &quot;var2&quot;: &quot;bar&quot;}&#39;</span>
+</pre></div>
+<p>Ca fonctionne, mais il existe une façon bien plus simple d'arriver au même résultat sans devoir créer d'<em>encoder</em> spécifique. Il suffit simplement d'utiliser l'attribut <strong>__dict__</strong> de l'instance. Celui-ci retourne l'ensemble des attributs internes d'un objet sous forme de dictionnaire, et c'est exactement ce que nous souhaitons :</p>
+<div class="highlight"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">__dict__</span><span class="p">)</span>
+<span class="s">&#39;{&quot;var1&quot;: &quot;foo&quot;, &quot;var2&quot;: &quot;bar&quot;}&#39;</span>
+</pre></div>
+<p>C'est beau Python...</p>
+</div>
+
+
+            <a href="https://twitter.com/share" class="twitter-share-button" data-url="https://ncrocfer.github.io/2015/08/19/serialiser-une-instance-de-classe-en-json-sous-python" data-text="Sérialiser une instance de classe en JSON sous Python" data-via="ncrocfer">Tweet</a>
+            <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+
+            <div class="hr"></div>
+            <a href="#" class="go-top">Go Top</a>
+            <footer class="footer">
+    <p>&copy; ncrocfer &ndash;
+        Built with <a href="https://github.com/ncrocfer/radric">Radric</a>
+        and a modified version of <a href="https://github.com/PurePelicanTheme/pure">Pure Theme</a>
+    </p>
+</footer>
+        </div>
+    </div>
+</div>
+
+<script>
+        var $top = $('.go-top');
+
+        // Show or hide the sticky footer button
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                $top.fadeIn(200);
+            } else {
+                $top.fadeOut(200);
+            }
+        });
+
+        // Animate the scroll to top
+        $top.click(function(event) {
+            event.preventDefault();
+            $('html, body').animate({scrollTop: 0}, 300);
+        })
+
+        // Makes sure that the href="#" attached to the <a> elements
+        // don't scroll you back up the page.
+        $('body').on('click', 'a[href="#"]', function(event) {
+            event.preventDefault();
+        });
+    </script>
+
+    <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-65778407-1', 'auto');
+  ga('send', 'pageview');
+</script>
+</body>
+</html>
