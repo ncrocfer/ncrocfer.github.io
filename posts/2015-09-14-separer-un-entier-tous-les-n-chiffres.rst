@@ -32,3 +32,27 @@ On peut l'utiliser pour reproduire l'affichage de StackOverflow :
 
     >>> split_int(10144157, ',')
     10,144,157
+
+****
+Edit
+****
+
+J'ai reçu un `tweet <https://twitter.com/sam_et_max/status/644019728374235136>`_ de **@SamEtMax** proposant une solution incluse dans la stdlib. Elle fonctionne grâce à la lib **locale** et sa méthode **format**, qui dispose de l'argument **grouping**.
+
+L'avantage principale de cette méthode est qu'elle se base sur la localisation de l'utilisateur : en France nous séparons les milliers par un espace (1 024), les Anglais utilisent la virgule (1,024) par exemple.
+
+La lib locale convertira l'entier directement sous le bon format :
+
+.. sourcecode:: python
+
+    >>> import locale
+    >>> locale.setlocale(locale.LC_ALL, 'en_US.utf8')
+    'en_US.utf8'
+    >>> print(locale.format("%d", 1024, grouping=True))
+    1,024
+    >>> locale.setlocale(locale.LC_ALL, 'fr_FR.utf8')
+    'fr_FR.utf8'
+    >>> print(locale.format("%d", 1024, grouping=True))
+    1 024
+
+Je ne connaissais pas et j'avoue que c'est beaucoup plus simple que ma fonction custom, je passerai par cette solution désormais :)
