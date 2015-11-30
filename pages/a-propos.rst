@@ -3,7 +3,7 @@ title: A propos
 menu: True
 ---
 
-Une présentation très rapide : je m'appelle Nicolas Crocfer et je suis développeur Python. Je suis actuellement employé en tant qu'Ingénieur en Conception et Développement au sein de l'ANSSI.
+Une présentation très rapide : je m'appelle Nicolas Crocfer et je suis développeur Python. Je suis actuellement employé en tant que Développeur chez `OVH <https://www.ovh.com>`_, après avoir été Ingénieur en Conception et Développement au sein de l'`ANSSI <http://www.ssi.gouv.fr>`_.
 
 .. image:: /images/a-propos.jpg
   :align: center
