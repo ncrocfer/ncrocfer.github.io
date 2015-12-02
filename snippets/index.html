@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="en">
 <head>
@@ -7,7 +6,7 @@
     <meta name="description" content="ncrocfer, Python & Web security">
 
     
-    <title>docker tag // ncrocfer // Python & Web security</title>
+    <title>Snippets // ncrocfer // Python & Web security</title>
     
 
     
@@ -59,40 +58,35 @@
 </div>
     <div class="pure-u-1">
         <div class="content">
-            <div class="posts">
-                <h1 class="content-subhead">
-                    Posts tagged 'docker'
-                </h1>
-                
-                <section class="post">
-                    <header class="post-header">
-                        <h3><a class="post-title" href="https://ncrocfer.github.io/2015/11/24/netstat-sur-debian-8-jessie">netstat sur Debian 8 Jessie</a></h3>
-                        <div class="document">
-<p>Lorsqu'on utilise docker pour développer, on ne sait pas toujours sur quel OS on va tomber. Tout dépend du choix du créateur de l'image : on tombera parfois sur du Debian, parfois sur du Ubuntu, parfois encore sur du CentOS.</p>
+            <h1 class="content-subhead">Snippets</h1>
+            <p><div class="document">
+<p>Cette page recence les snippets que je trouve intéressants et dont je peux être amené à me servir régulièrement. Ceux qui sont mis dans un alias peuvent être placés dans le <strong>~/.bashrc</strong>.</p>
+<p>Les snippets seront parfois liés à un article, parfois non.</p>
+<hr class="docutils" />
+<p><strong>Python : supprimer les fichiers .pyc, .pyo et le dossier pycache</strong></p>
+<div class="highlight"><pre><span class="nv">$ </span><span class="nb">alias </span><span class="nv">rmpyc</span><span class="o">=</span><span class="s1">&#39;find . | grep -E &quot;(pycache|.pyc|.pyo$)&quot; | xargs rm -rf&#39;</span>
+</pre></div>
+<p><strong>Docker : démarrer un shell dans un container actif</strong></p>
+<div class="highlight"><pre><span class="nv">$ </span>cat ~/.bashrc
+...
+dockerbash<span class="o">()</span> <span class="o">{</span>
+    docker <span class="nb">exec</span> -it <span class="nv">$1</span> /bin/bash
+<span class="o">}</span>
+<span class="nb">alias </span>docker-bash<span class="o">=</span>dockerbash
 
-                        <p class="post-meta">
-                            
-                            in
-                            
-                            <a href="https://ncrocfer.github.io/categories/howtos">Howtos</a> &middot;
-                            
-                            
-                            Tue 24 November 2015
-                        </p>
-                    </header>
-                </section>
-                
-
-                <footer class="footer">
+<span class="nv">$ </span>docker-bash bc543781f4f5
+</pre></div>
+</div>
+</p>
+        </div>
+    </div>
+</div>
+<footer class="footer">
     <p>&copy; ncrocfer &ndash;
         Built with <a href="https://github.com/ncrocfer/radric">Radric</a>
         and a modified version of <a href="https://github.com/PurePelicanTheme/pure">Pure Theme</a>
     </p>
 </footer>
-            </div>
-        </div>
-    </div>
-</div>
 
 <script>
         var $top = $('.go-top');
