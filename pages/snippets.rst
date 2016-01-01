@@ -28,4 +28,10 @@ Les snippets seront parfois liés à un article, parfois non.
 
     $ docker-bash bc543781f4f5
 
+**Docker : supprimer tous les containers**
+
+.. sourcecode:: bash
+
+    $ alias docker-rm-all='docker rm --force `docker ps -qa`'
+
 
