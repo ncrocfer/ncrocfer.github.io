@@ -1,5 +1,0 @@
-{% set posts=tag.posts %}
-{% extends 'index.html' %}
-
-{% block title %}{{ tag.name|striptags }} tag // {{ super() }}{% endblock title %}
-{% block pagetitle %}Posts tagged '{{ tag.name }}'{% endblock pagetitle %}

@@ -1,5 +1,0 @@
-{% set posts=author.posts %}
-{% extends 'index.html' %}
-
-{% block title %}{{ author.name|striptags }} author // {{ super() }}{% endblock title %}
-{% block pagetitle %}Posts by '{{ author.name }}'{% endblock pagetitle %}

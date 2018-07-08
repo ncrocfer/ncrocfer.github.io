@@ -1,0 +1,11 @@
+languageCode = "fr-FR"
+title = "Nicolas Crocfer"
+theme = "purehugo"
+Paginate = 10
+
+[params]
+  hideShareOptions = true
+  twitterName = "ncrocfer"
+  githubName = "ncrocfer"
+  description = "Python Developer"
+  google_analytics = "UA-65778407-1"
