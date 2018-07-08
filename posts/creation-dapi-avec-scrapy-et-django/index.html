@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Création d&#39;API Avec Scrapy et Django &middot; Nicolas Crocfer</title>
+
+    <meta name="description" content="">
+
+    <meta name="generator" content="Hugo 0.42.2" />
+    <meta name="twitter:card" content="summary">
+    
+    <meta name="twitter:title" content="Création d&#39;API Avec Scrapy et Django &middot; Nicolas Crocfer">
+    <meta name="twitter:description" content="">
+
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Création d&#39;API Avec Scrapy et Django &middot; Nicolas Crocfer">
+    <meta property="og:description" content="">
+
+    <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Oxygen:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/pure-min.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/grids-responsive-min.css">
+
+    <link rel="stylesheet" href="/css/all.min.css">
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <link rel="alternate" type="application/rss+xml" title="Nicolas Crocfer" href="/index.xml" />
+</head>
+<body>
+
+
+<div id="layout" class="pure-g">
+    <div class="sidebar pure-u-1 pure-u-md-1-4">
+    <div class="header">
+        <hgroup>
+            <h1 class="brand-title"><a href="">Nicolas Crocfer</a></h1>
+            <h2 class="brand-tagline"> Python Developer </h2>
+        </hgroup>
+
+        <nav class="nav">
+            <ul class="nav-list">
+                
+                <li class="nav-item">
+                    <a class="pure-button" href="https://twitter.com/ncrocfer">
+                        <i class="fa fa-twitter"></i> Twitter
+                    </a>
+                </li>
+                
+                
+                <li class="nav-item">
+                    <a class="pure-button" href="https://github.com/ncrocfer">
+                        <i class="fa fa-github-alt"></i> Github
+                    </a>
+                </li>
+                
+                
+                
+                <li class="nav-item">
+                    <a class="pure-button" href="/index.xml">
+                        <i class="fa fa-rss"></i> rss
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+    <div class="content pure-u-1 pure-u-md-3-4">
+        <div>
+            
+            <div class="posts">
+                <h1 class="content-subhead">27 Aug 2015, 18:05</h1>
+                <section class="post">
+                    <header class="post-header">
+
+                        <a href="/posts/creation-dapi-avec-scrapy-et-django/" class="post-title">Création d&#39;API Avec Scrapy et Django</a>
+
+                        <p class="post-meta">
+                            
+                            
+                        </p>
+                    </header>
+                    
+                    <div class="post-description">
+                        <p>La majorité des API se font désormais au format REST. Sous Django, de telles API peuvent facilement se créer grâce au toolkit <strong>Django REST framework</strong>.</p>
+
+<p>Nous allons voir dans cet article comment créer une API REST sous Django. Pour que l&rsquo;exemple soit ludique, nous créerons une API fournissant la liste complète des bières belge ! Pour cela nous utiliserons Scrapy afin de parser la page Wikipédia correspondante, puis nous utiliserons les modèles Django pour insérer les données en base.</p>
+
+<p></p>
+
+<h1 id="setup">Setup</h1>
+
+<p>On commence par créer un nouvel environnement virtuel qui contiendra l&rsquo;ensemble des packages utiles à notre projet :</p>
+
+<pre><code class="language-bash">$ mkvirtualenv beer-rest
+$ pip install Scrapy scrapy-djangoitem Django djangorestframework
+</code></pre>
+
+<p>Dans l&rsquo;ordre :</p>
+
+<ul>
+<li><strong>Scrapy</strong> va nous servir à parser la page Wikipédia et retourner les informations souhaitées,</li>
+<li><strong>scrapy-djangoitem</strong> nous permettra d&rsquo;utiliser les modèles Django dans notre projet Scrapy,</li>
+<li><strong>Django</strong> sera notre framework web,</li>
+<li><strong>djangorestframework</strong> va nous permettre de créer facilement notre API REST.</li>
+</ul>
+
+<p>Nous pouvons maintenant créer notre projet Django <strong>alcohol</strong>, ainsi que l&rsquo;application <strong>beer</strong> :</p>
+
+<pre><code class="language-bash">$ django-admin startproject alcohol
+$ cd alcohol
+$ ./manage.py startapp beer
+</code></pre>
+
+<h1 id="création-du-modèle">Création du modèle</h1>
+
+<p>La page Wikipédia <a href="https://fr.wikipedia.org/wiki/Liste_des_bi%C3%A8res_belges">suivante</a> propose la liste complète des bières belges, par ordre alphabétique.</p>
+
+<p>Nous allons enregistrer en base les informations données, à savoir :</p>
+
+<ul>
+<li>le nom de la bière</li>
+<li>le type</li>
+<li>la teneur en alcool</li>
+<li>la brasserie</li>
+</ul>
+
+<p>Voici le modèle correspondant :</p>
+
+<pre><code class="language-python"># ./alcohol/beer/models.py
+
+from django.db import models
+
+class Beer(models.Model):
+    nom = models.CharField(max_length=80)
+    type = models.CharField(max_length=30)
+    degre = models.CharField(max_length=6, null=True)
+    brasserie = models.CharField(max_length=80)
+
+    def __str__(self):
+        return self.nom
+</code></pre>
+
+<p>Certaines teneurs en alcool ne sont pas mentionnées, nous autorisons donc la valeur <strong>null</strong>.</p>
+
+<p>On active cette application dans le fichier <strong>settings.py</strong> de notre projet Django :</p>
+
+<pre><code class="language-python"># ./alcohol/alcohol/settings.py
+
+INSTALLED_APPS = (
+    ...
+    'beer'
+)
+</code></pre>
+
+<p>On synchronise ensuite la base de données :</p>
+
+<pre><code class="language-bash">$ ./manage.py makemigrations
+$ ./manage.py migrate
+</code></pre>
+
+<h1 id="récupération-des-bières-avec-scrapy">Récupération des bières avec Scrapy</h1>
+
+<p>Nous allons utiliser <strong>Scrapy</strong> pour extraire les données et les insérer en base.</p>
+
+<p>Toujours dans le dossier <strong>alcohol</strong>, nous créons un dossier <strong>scrapy</strong> qui contiendra nos crawlers (nous n&rsquo;en aurons qu&rsquo;un dans notre cas), puis nous initialisons un nouveau projet Scrapy :</p>
+
+<pre><code class="language-bash">$ mkdir scrapy
+$ cd scrapy
+$ scrapy startproject wikibeer
+$ cd wikibeer
+</code></pre>
+
+<p>Nous devrions normalement créer une sous-classe de <strong>scrapy.Item</strong>, contenant la liste des données souhaitées (nom, type, degre, brasserie). Néanmoins nous voulons que les données récupérées par Scrapy soient directement accessible via Django. Pour cela nous allons utiliser le package <strong>scrapy-djangoitem</strong> qui se chargera lui-même d&rsquo;insérer les éléments en base.</p>
+
+<p>Voici donc à quoi ressemble notre classe item :</p>
+
+<pre><code class="language-python"># -*- coding: utf-8 -*-
+# ./alcohol/scrapy/wikibeer/wikibeer/items.py
+
+from scrapy_djangoitem import DjangoItem
+from beer.models import Beer
+
+class WikibeerItem(DjangoItem):
+    django_model = Beer
+</code></pre>
+
+<p>L&rsquo;accès au modèle <strong>Beer</strong> de notre projet Django est rendu possible en ajoutant les lignes suitantes au fichier <strong>settings.py</strong> de votre projet Scrapy :</p>
+
+<pre><code class="language-python"># -*- coding: utf-8 -*-
+# ./alcohol/scrapy/wikibeer/wikibeer/settings.py
+
+import sys
+sys.path.append('/opt/projects/alcohol')
+
+import os
+os.environ['DJANGO_SETTINGS_MODULE'] = 'alcohol.settings'
+
+...
+</code></pre>
+
+<p>Pensez à modifier le chemin selon votre configuration.</p>
+
+<p>Il ne reste plus qu&rsquo;à créer notre spider qui se chargera de retourner les données contenues dans la page :</p>
+
+<pre><code class="language-python"># -*- coding: utf-8 -*-
+# ./alcohol/scrapy/wikibeer/wikibeer/spiders/wikibeer_spider.py
+
+import scrapy
+from wikibeer.items import WikibeerItem
+
+
+class WikibeerSpider(scrapy.Spider):
+    name = &quot;wikibeer&quot;
+    allowed_domains = [&quot;fr.wikipedia.org&quot;]
+    start_urls = [
+        &quot;https://fr.wikipedia.org/wiki/Liste_des_bi%C3%A8res_belges&quot;,
+    ]
+
+    def parse(self, response):
+        for sel in response.xpath('//table[contains(@class, &quot;wikitable&quot;)]//tr'):
+
+            # On vérifie qu'il ne s'agit pas du header du tableau
+            nom = sel.xpath('td[1]//text()').extract()
+            if not nom:
+                continue
+
+            item = WikibeerItem()
+            item['nom'] = &quot;&quot;.join(nom)
+            item['type'] = &quot;&quot;.join(sel.xpath('td[2]//text()').extract())
+            item['degre'] = &quot;&quot;.join(sel.xpath('td[3]//text()').extract())
+            item['brasserie'] = &quot;&quot;.join(sel.xpath('td[4]//text()').extract())
+
+            item.save()
+</code></pre>
+
+<p>Je ne m&rsquo;attarde pas sur ce code, n&rsquo;hésitez pas à jeter un oeil à la <a href="http://doc.scrapy.org/en/1.0/">documentation</a> de Scrapy si vous voulez plus d&rsquo;informations. Scrapy est un crawler web extrèmement puissant, et le spider précédent n&rsquo;exploite qu&rsquo;une infime partie de ses possibilités.</p>
+
+<p>Notez tout de même l&rsquo;utilisation de la méthode save() sur l&rsquo;item (plutôt que de le renvoyer via un yield) qui permet d&rsquo;enregistrer l&rsquo;objet en base.</p>
+
+<p>Le spider peut enfin être lancé grâce à la commande suivante :</p>
+
+<pre><code class="language-bash">$ scrapy crawl wikibeer
+2015-08-27 18:23:50 [scrapy] INFO: Scrapy 1.0.1 started (bot: wikibeer)
+2015-08-27 18:23:50 [scrapy] INFO: Optional features available: ssl, http11
+2015-08-27 18:23:50 [scrapy] INFO: Overridden settings: {'NEWSPIDER_MODULE': 'wikibeer.spiders', 'SPIDER_MODULES': ['wikibeer.spiders'], 'BOT_NAME': 'wikibeer'}
+2015-08-27 18:23:50 [scrapy] INFO: Enabled extensions: CloseSpider, TelnetConsole, LogStats, CoreStats, SpiderState
+2015-08-27 18:23:50 [scrapy] INFO: Enabled downloader middlewares: HttpAuthMiddleware, DownloadTimeoutMiddleware, UserAgentMiddleware, RetryMiddleware, DefaultHeadersMiddleware, MetaRefreshMiddleware, HttpCompressionMiddleware, RedirectMiddleware, CookiesMiddleware, ChunkedTransferMiddleware, DownloaderStats
+2015-08-27 18:23:50 [scrapy] INFO: Enabled spider middlewares: HttpErrorMiddleware, OffsiteMiddleware, RefererMiddleware, UrlLengthMiddleware, DepthMiddleware
+2015-08-27 18:23:50 [scrapy] INFO: Enabled item pipelines:
+2015-08-27 18:23:50 [scrapy] INFO: Spider opened
+2015-08-27 18:23:50 [scrapy] INFO: Crawled 0 pages (at 0 pages/min), scraped 0 items (at 0 items/min)
+2015-08-27 18:23:51 [scrapy] DEBUG: Telnet console listening on 127.0.0.1:6023
+2015-08-27 18:23:51 [scrapy] DEBUG: Crawled (200) &lt;GET https://fr.wikipedia.org/wiki/Liste_des_bi%C3%A8res_belges&gt; (referer: None)
+2015-08-27 18:23:52 [django.db.backends] DEBUG: (0.000) QUERY = u'BEGIN' - PARAMS = (); args=None
+2015-08-27 18:23:52 [django.db.backends] DEBUG: (0.001) QUERY = u'INSERT INTO &quot;beer_beer&quot; (&quot;nom&quot;, &quot;type&quot;, &quot;degre&quot;, &quot;brasserie&quot;) VALUES (%s, %s, %s, %s)' - PARAMS = (u'3 Scht\xe9ng', u'Fermentation haute', u'6\xa0%', u&quot;Brasserie Grain d'Orge&quot;); args=[u'3 Scht\xe9ng', u'Fermentation haute', u'6\xa0%', u&quot;Brasserie Grain d'Orge&quot;]
+2015-08-27 18:23:52 [scrapy] INFO: Received SIGINT, shutting down gracefully. Send again to force
+2015-08-27 18:23:52 [django.db.backends] DEBUG: (0.000) QUERY = u'BEGIN' - PARAMS = (); args=None
+2015-08-27 18:23:52 [django.db.backends] DEBUG: (0.000) QUERY = u'INSERT INTO &quot;beer_beer&quot; (&quot;nom&quot;, &quot;type&quot;, &quot;degre&quot;, &quot;brasserie&quot;) VALUES (%s, %s, %s, %s)' - PARAMS = (u'IV Saison', u'Saison', u'6,5\xa0%', u'Brasserie de Jandrain-Jandrenouille'); args=[u'IV Saison', u'Saison', u'6,5\xa0%', u'Brasserie de Jandrain-Jandrenouille']
+2015-08-27 18:23:52 [django.db.backends] DEBUG: (0.000) QUERY = u'BEGIN' - PARAMS = (); args=None
+2015-08-27 18:23:52 [django.db.backends] DEBUG: (0.000) QUERY = u'INSERT INTO &quot;beer_beer&quot; (&quot;nom&quot;, &quot;type&quot;, &quot;degre&quot;, &quot;brasserie&quot;) VALUES (%s, %s, %s, %s)' - PARAMS = (u'V Cense', u'Fermentation haute, Sp\xe9ciale', u'7,5\xa0%', u'Brasserie de Jandrain-Jandrenouille'); args=[u'V Cense', u'Fermentation haute, Sp\xe9ciale', u'7,5\xa0%', u'Brasserie de Jandrain-Jandrenouille']
+2015-08-27 18:23:52 [django.db.backends] DEBUG: (0.000) QUERY = u'BEGIN' - PARAMS = (); args=None
+2015-08-27 18:23:52 [django.db.backends] DEBUG: (0.000) QUERY = u'INSERT INTO &quot;beer_beer&quot; (&quot;nom&quot;, &quot;type&quot;, &quot;degre&quot;, &quot;brasserie&quot;) VALUES (%s, %s, %s, %s)' - PARAMS = (u'VI Wheat', u'Fermentation haute, Blanche', u'6\xa0%', u'Brasserie de Jandrain-Jandrenouille'); args=[u'VI Wheat', u'Fermentation haute, Blanche', u'6\xa0%', u'Brasserie de Jandrain-Jandrenouille']
+2015-08-27 18:23:52 [django.db.backends] DEBUG: (0.000) QUERY = u'BEGIN' - PARAMS = (); args=None
+2015-08-27 18:23:52 [django.db.backends] DEBUG: (0.000) QUERY = u'INSERT INTO &quot;beer_beer&quot; (&quot;nom&quot;, &quot;type&quot;, &quot;degre&quot;, &quot;brasserie&quot;) VALUES (%s, %s, %s, %s)' - PARAMS = (u'26.2 M', u'Blonde', u'4,8\xa0%', u&quot;Brasserie L'\xc9chapp\xe9e Belle&quot;); args=[u'26.2 M', u'Blonde', u'4,8\xa0%', u&quot;Brasserie L'\xc9chapp\xe9e Belle&quot;]
+...
+</code></pre>
+
+<p>Les données sont bien enregistrées en base de données, le tout en passant par notre modèle Django :</p>
+
+<img src="/images/scrapy-django-rest-1.png" alt="" class="pure-img" >
+
+<h1 id="mise-en-place-de-django-rest-framework">Mise en place de Django Rest Framework</h1>
+
+<p>Nous avons maintenant la liste entière des bières dans notre base de données. Nous pouvons créer un serializer basé sur notre modèle <strong>Beer</strong> :</p>
+
+<pre><code class="language-python"># ./alcohol/beer/serializers.py
+
+from beer.models import Beer
+from rest_framework import serializers
+
+class BeerSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Beer
+        fields = ('nom', 'type', 'degre', 'brasserie')
+</code></pre>
+
+<p>Nous créons ensuite une vue qui sera une sous-classe de <strong>rest_framework.viewsets.ModelViewSet</strong> dans laquelle nous renseignons la requête utilisée (toutes les bières) et le serializer créé précédemment :</p>
+
+<pre><code class="language-python"># ./alcohol/beer/views.py
+
+from rest_framework import viewsets
+from beer.models import Beer
+from beer.serializers import BeerSerializer
+
+class BeerViewSet(viewsets.ModelViewSet):
+    queryset = Beer.objects.all()
+    serializer_class = BeerSerializer
+</code></pre>
+
+<p>Les urls de notre projet doivent être renseignées dans le fichier <strong>alcohol/urls.py</strong> (dans notre cas l&rsquo;API sera accessible via <a href="http://localhost:8000/api/beers/">http://localhost:8000/api/beers/</a> :</p>
+
+<pre><code class="language-python"># ./alcohol/alcohol/urls.py
+
+from django.contrib import admin
+from django.conf.urls import url, include
+from rest_framework import routers
+from beer.views import BeerViewSet
+
+router = routers.DefaultRouter()
+router.register(r'api/beers', BeerViewSet)
+
+urlpatterns = [
+    url(r'^admin/', include(admin.site.urls)),
+    url(r'^', include(router.urls))
+]
+</code></pre>
+
+<p>Il ne reste plus qu&rsquo;à activer l&rsquo;application <strong>Django Rest Framework</strong> dans le fichier <strong>settings.py</strong> de notre projet Django :</p>
+
+<pre><code class="language-python"># ./alcohol/alcohol/settings.py
+
+INSTALLED_APPS = (
+        ...
+        'rest_framework',
+        'beer'
+)
+
+</code></pre>
+
+<h1 id="test-de-l-api">Test de l&rsquo;API</h1>
+
+<p>Et voilà ! Nous avons rapratrier un jeu de données via Scrapy, nous avons mis en place notre API via Django Rest Framework, nous pouvons désormais la tester.</p>
+
+<p>On lance tout d&rsquo;abord le serveur :</p>
+
+<pre><code class="language-python">$ ./manage.py runserver
+Performing system checks...
+
+System check identified no issues (0 silenced).
+August 27, 2015 - 18:28:08
+Django version 1.8.4, using settings 'alcohol.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+</code></pre>
+
+<p>Puis nous utilisons <strong>curl</strong> (par exemple) pour accéder à notre API :</p>
+
+<pre><code class="language-bash">$ curl -H 'Accept: application/json; indent=4' http://127.0.0.1:8000/api/beers/
+...
+{
+    &quot;nom&quot;: &quot;Abbaye du Park Blonde&quot;,
+    &quot;type&quot;: &quot;Abbaye, Blonde&quot;,
+    &quot;degre&quot;: &quot;6 %&quot;,
+    &quot;brasserie&quot;: &quot;Brasserie Haacht&quot;
+},
+{
+    &quot;nom&quot;: &quot;Abbaye du Park Brune&quot;,
+    &quot;type&quot;: &quot;Abbaye, Brune&quot;,
+    &quot;degre&quot;: &quot;6 %&quot;,
+    &quot;brasserie&quot;: &quot;Brasserie Haacht&quot;
+},
+{
+    &quot;nom&quot;: &quot;Abdis Blond&quot;,
+    &quot;type&quot;: &quot;Blonde&quot;,
+    &quot;degre&quot;: &quot;6,5 %&quot;,
+    &quot;brasserie&quot;: &quot;Brasserie Riva&quot;
+},
+{
+    &quot;nom&quot;: &quot;Abdis Bruin&quot;,
+    &quot;type&quot;: &quot;Brune&quot;,
+    &quot;degre&quot;: &quot;6,5 %&quot;,
+    &quot;brasserie&quot;: &quot;Brasserie Riva&quot;
+}
+...
+</code></pre>
+
+<p>Notez pour finir que <strong>Django Rest Framework</strong> fournit également une interface web pour consulter votre API :</p>
+
+<p><img src="/images/scrapy-django-rest-2.png" alt="" class="pure-img" >
+<img src="/images/scrapy-django-rest-3.png" alt="" class="pure-img" ></p>
+                    </div>
+                    
+                </section>
+            </div>
+            <div class="footer">
+    <div class="pure-menu pure-menu-horizontal pure-menu-open">
+        <ul>
+            <li>Powered by <a class="hugo" href="https://gohugo.io/" target="_blank">hugo</a></li>
+        </ul>
+    </div>
+</div>
+<script src="/js/all.min.js"></script>
+
+        </div>
+    </div>
+</div>
+
+
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-65778407-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+
+</body>
+</html>

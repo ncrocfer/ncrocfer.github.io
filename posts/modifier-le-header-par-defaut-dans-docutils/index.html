@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modifier le header par défaut dans docutils &middot; Nicolas Crocfer</title>
+
+    <meta name="description" content="">
+
+    <meta name="generator" content="Hugo 0.42.2" />
+    <meta name="twitter:card" content="summary">
+    
+    <meta name="twitter:title" content="Modifier le header par défaut dans docutils &middot; Nicolas Crocfer">
+    <meta name="twitter:description" content="">
+
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Modifier le header par défaut dans docutils &middot; Nicolas Crocfer">
+    <meta property="og:description" content="">
+
+    <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Oxygen:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/pure-min.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/grids-responsive-min.css">
+
+    <link rel="stylesheet" href="/css/all.min.css">
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <link rel="alternate" type="application/rss+xml" title="Nicolas Crocfer" href="/index.xml" />
+</head>
+<body>
+
+
+<div id="layout" class="pure-g">
+    <div class="sidebar pure-u-1 pure-u-md-1-4">
+    <div class="header">
+        <hgroup>
+            <h1 class="brand-title"><a href="">Nicolas Crocfer</a></h1>
+            <h2 class="brand-tagline"> Python Developer </h2>
+        </hgroup>
+
+        <nav class="nav">
+            <ul class="nav-list">
+                
+                <li class="nav-item">
+                    <a class="pure-button" href="https://twitter.com/ncrocfer">
+                        <i class="fa fa-twitter"></i> Twitter
+                    </a>
+                </li>
+                
+                
+                <li class="nav-item">
+                    <a class="pure-button" href="https://github.com/ncrocfer">
+                        <i class="fa fa-github-alt"></i> Github
+                    </a>
+                </li>
+                
+                
+                
+                <li class="nav-item">
+                    <a class="pure-button" href="/index.xml">
+                        <i class="fa fa-rss"></i> rss
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+    <div class="content pure-u-1 pure-u-md-3-4">
+        <div>
+            
+            <div class="posts">
+                <h1 class="content-subhead">05 Aug 2015, 00:11</h1>
+                <section class="post">
+                    <header class="post-header">
+
+                        <a href="/posts/modifier-le-header-par-defaut-dans-docutils/" class="post-title">Modifier le header par défaut dans docutils</a>
+
+                        <p class="post-meta">
+                            
+                            
+                        </p>
+                    </header>
+                    
+                    <div class="post-description">
+                        <p>Je travaille actuellement sur un <a href="https://github.com/ncrocfer/radric">générateur statique de blog</a> qui génère les pages HTML à partir de la syntaxe <strong>reStructuredText</strong>.</p>
+
+<p>J&rsquo;utilise pour cela <strong>docutils</strong>, et par défaut les headers (h1, h2, h3&hellip;) sont générés par ordre croissant. Si il détecte un h1, alors un header de niveau moindre deviendra h2, ensuite h3, etc.</p>
+
+<p></p>
+
+<p>Malheureusement dans mon thème, le titre de chaque post n&rsquo;est pas généré par docutils, mais apparaît directement dans un template en tant que h1. Ce qui fait que chaque titre généré par docutils par la suite sera également un h1.</p>
+
+<p>Pour modifier cela, il faut placer le paramètre <strong>initial_header_level</strong> à la valeur souhaitée :</p>
+
+<pre><code class="language-python">parts = publish_parts(file.plaintext, writer_name='html',
+                      settings_overrides={'initial_header_level':2,})
+return parts['html_body']
+</code></pre>
+
+<p>De cette façon les premiers headers seront directement générés en h2 (il faut mettre la valeur 3 pour h3, 4 pour h4, &hellip;).</p>
+                    </div>
+                    
+                </section>
+            </div>
+            <div class="footer">
+    <div class="pure-menu pure-menu-horizontal pure-menu-open">
+        <ul>
+            <li>Powered by <a class="hugo" href="https://gohugo.io/" target="_blank">hugo</a></li>
+        </ul>
+    </div>
+</div>
+<script src="/js/all.min.js"></script>
+
+        </div>
+    </div>
+</div>
+
+
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-65778407-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+
+</body>
+</html>

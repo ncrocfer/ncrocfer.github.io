@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créer une commande personnalisée pour Git &middot; Nicolas Crocfer</title>
+
+    <meta name="description" content="">
+
+    <meta name="generator" content="Hugo 0.42.2" />
+    <meta name="twitter:card" content="summary">
+    
+    <meta name="twitter:title" content="Créer une commande personnalisée pour Git &middot; Nicolas Crocfer">
+    <meta name="twitter:description" content="">
+
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Créer une commande personnalisée pour Git &middot; Nicolas Crocfer">
+    <meta property="og:description" content="">
+
+    <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Oxygen:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/pure-min.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/grids-responsive-min.css">
+
+    <link rel="stylesheet" href="/css/all.min.css">
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <link rel="alternate" type="application/rss+xml" title="Nicolas Crocfer" href="/index.xml" />
+</head>
+<body>
+
+
+<div id="layout" class="pure-g">
+    <div class="sidebar pure-u-1 pure-u-md-1-4">
+    <div class="header">
+        <hgroup>
+            <h1 class="brand-title"><a href="">Nicolas Crocfer</a></h1>
+            <h2 class="brand-tagline"> Python Developer </h2>
+        </hgroup>
+
+        <nav class="nav">
+            <ul class="nav-list">
+                
+                <li class="nav-item">
+                    <a class="pure-button" href="https://twitter.com/ncrocfer">
+                        <i class="fa fa-twitter"></i> Twitter
+                    </a>
+                </li>
+                
+                
+                <li class="nav-item">
+                    <a class="pure-button" href="https://github.com/ncrocfer">
+                        <i class="fa fa-github-alt"></i> Github
+                    </a>
+                </li>
+                
+                
+                
+                <li class="nav-item">
+                    <a class="pure-button" href="/index.xml">
+                        <i class="fa fa-rss"></i> rss
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+    <div class="content pure-u-1 pure-u-md-3-4">
+        <div>
+            
+            <div class="posts">
+                <h1 class="content-subhead">03 Aug 2015, 16:32</h1>
+                <section class="post">
+                    <header class="post-header">
+
+                        <a href="/posts/creer-une-commande-personnalisee-pour-git/" class="post-title">Créer une commande personnalisée pour Git</a>
+
+                        <p class="post-meta">
+                            
+                            
+                        </p>
+                    </header>
+                    
+                    <div class="post-description">
+                        <p>Git est un formidable outil de versionning fournissant un nombre incroyable de fonctionnalités. Mais il peut arriver un cas particulier pour lequel aucune commande git n&rsquo;apporte de solution : c&rsquo;est pourquoi git propose à l&rsquo;utilisateur de créer ses propres commandes personnalisées.</p>
+
+<p></p>
+
+<p>Il m&rsquo;arrive par exemple de vouloir connaître le nombre de commits sur un projet. Pour cela je fais :</p>
+
+<pre><code class="language-bash">$ git log --pretty=oneline | wc -l
+132
+</code></pre>
+
+<p>Ca marche mais c&rsquo;est un peu long à taper à chaque fois. On peut évidemment faire un alias dans notre fichier <strong>~/.bashrc</strong>, mais on peut également créer une commande git qui permette de faire la même chose.</p>
+
+<p>Pour cela on crée un fichier dans <strong>/usr/bin</strong>, par exemple <strong>git-count</strong>. Le nom des commandes personnalisées doivent être séparées par des tirets et n&rsquo;ont pas d&rsquo;extension. On y place le code souhaité :</p>
+
+<pre><code class="language-bash">#!/bin/bash
+git log --pretty=oneline | wc -l
+</code></pre>
+
+<p>N&rsquo;oubliez pas de rendre ce fichier éxécutable (<strong>chmod +x</strong>). La commande est maintenant accessible depuis un repository local :</p>
+
+<pre><code class="language-bash">$ git count
+132
+</code></pre>
+                    </div>
+                    
+                </section>
+            </div>
+            <div class="footer">
+    <div class="pure-menu pure-menu-horizontal pure-menu-open">
+        <ul>
+            <li>Powered by <a class="hugo" href="https://gohugo.io/" target="_blank">hugo</a></li>
+        </ul>
+    </div>
+</div>
+<script src="/js/all.min.js"></script>
+
+        </div>
+    </div>
+</div>
+
+
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-65778407-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+
+</body>
+</html>

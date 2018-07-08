@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sérialiser une instance de classe en JSON sous Python &middot; Nicolas Crocfer</title>
+
+    <meta name="description" content="">
+
+    <meta name="generator" content="Hugo 0.42.2" />
+    <meta name="twitter:card" content="summary">
+    
+    <meta name="twitter:title" content="Sérialiser une instance de classe en JSON sous Python &middot; Nicolas Crocfer">
+    <meta name="twitter:description" content="">
+
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Sérialiser une instance de classe en JSON sous Python &middot; Nicolas Crocfer">
+    <meta property="og:description" content="">
+
+    <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Oxygen:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/pure-min.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/grids-responsive-min.css">
+
+    <link rel="stylesheet" href="/css/all.min.css">
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <link rel="alternate" type="application/rss+xml" title="Nicolas Crocfer" href="/index.xml" />
+</head>
+<body>
+
+
+<div id="layout" class="pure-g">
+    <div class="sidebar pure-u-1 pure-u-md-1-4">
+    <div class="header">
+        <hgroup>
+            <h1 class="brand-title"><a href="">Nicolas Crocfer</a></h1>
+            <h2 class="brand-tagline"> Python Developer </h2>
+        </hgroup>
+
+        <nav class="nav">
+            <ul class="nav-list">
+                
+                <li class="nav-item">
+                    <a class="pure-button" href="https://twitter.com/ncrocfer">
+                        <i class="fa fa-twitter"></i> Twitter
+                    </a>
+                </li>
+                
+                
+                <li class="nav-item">
+                    <a class="pure-button" href="https://github.com/ncrocfer">
+                        <i class="fa fa-github-alt"></i> Github
+                    </a>
+                </li>
+                
+                
+                
+                <li class="nav-item">
+                    <a class="pure-button" href="/index.xml">
+                        <i class="fa fa-rss"></i> rss
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+    <div class="content pure-u-1 pure-u-md-3-4">
+        <div>
+            
+            <div class="posts">
+                <h1 class="content-subhead">19 Aug 2015, 00:30</h1>
+                <section class="post">
+                    <header class="post-header">
+
+                        <a href="/posts/serialiser-une-instance-de-classe-en-json-sous-python/" class="post-title">Sérialiser une instance de classe en JSON sous Python</a>
+
+                        <p class="post-meta">
+                            
+                            
+                        </p>
+                    </header>
+                    
+                    <div class="post-description">
+                        <p>Je me suis récemment confronté pour un projet perso à devoir sérialiser une instance de classe en JSON. J&rsquo;aurais très bien pu utiliser un autre type de sérialisation, comme Pickle, mais je suis habitué au JSON et je préfère rester sur ce format pour l&rsquo;ensemble de mes projets.</p>
+
+<p>Pour la serialisation nous devons passer par la méthode <strong>JSON.dumps()</strong>. A priori rien de bien compliqué pour des types basiques (list, dict, str, bool&hellip;), mais les instances de classe ne sont pas serialisables.</p>
+
+<p></p>
+
+<p>Prenons une classe toute simple :</p>
+
+<pre><code class="language-python"># -*- coding: utf-8 -*- 
+
+class MyClass(object):
+    def __init__(self):
+        self.var1 = &quot;foo&quot;
+        self.var2 = &quot;bar&quot;
+</code></pre>
+
+<p>Si vous essayez de sérialiser une instance de celle-ci, une exception sera levée :</p>
+
+<pre><code class="language-python">&gt;&gt;&gt; from myclass import MyClass
+&gt;&gt;&gt; import json
+&gt;&gt;&gt; obj = MyClass()
+&gt;&gt;&gt; json.dumps(obj)
+Traceback (most recent call last):
+  File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt;
+  File &quot;/usr/lib/python3.4/json/__init__.py&quot;, line 230, in dumps
+    return _default_encoder.encode(obj)
+  File &quot;/usr/lib/python3.4/json/encoder.py&quot;, line 192, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+  File &quot;/usr/lib/python3.4/json/encoder.py&quot;, line 250, in iterencode
+    return _iterencode(o, 0)
+  File &quot;/usr/lib/python3.4/json/encoder.py&quot;, line 173, in default
+    raise TypeError(repr(o) + &quot; is not JSON serializable&quot;)
+TypeError: &lt;myclass.MyClass object at 0x7f37074c8e10&gt; is not JSON serializable
+</code></pre>
+
+<p>Pour pallier à ce problème, la <a href="https://docs.python.org/3/library/json.html">documentation</a> suggère d&rsquo;utiliser une sous-classe de <strong>json.JSONEncoder</strong> et de retourner le résultat attendu dans la méthode <strong>default()</strong>. Ce qui donne dans notre cas :</p>
+
+<pre><code class="language-python">class MyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, MyClass):
+            return vars(obj)
+        else:
+            return json.JSONEncoder.default(self, obj)
+</code></pre>
+
+<p>On spécifie ensuite cet <em>encoder</em> dans l&rsquo;argument nommé <strong>cls</strong> :</p>
+
+<pre><code class="language-python">&gt;&gt;&gt; json.dumps(obj, cls=MyEncoder)
+'{&quot;var1&quot;: &quot;foo&quot;, &quot;var2&quot;: &quot;bar&quot;}'
+</code></pre>
+
+<p>Ca fonctionne, mais il existe une façon bien plus simple d&rsquo;arriver au même résultat sans devoir créer d&rsquo;<em>encoder</em> spécifique. Il suffit simplement d&rsquo;utiliser l&rsquo;attribut <strong>__dict__</strong> de l&rsquo;instance. Celui-ci retourne l&rsquo;ensemble des attributs internes d&rsquo;un objet sous forme de dictionnaire, et c&rsquo;est exactement ce que nous souhaitons :</p>
+
+<pre><code class="language-python">&gt;&gt;&gt; json.dumps(obj.__dict__)
+'{&quot;var1&quot;: &quot;foo&quot;, &quot;var2&quot;: &quot;bar&quot;}'
+</code></pre>
+
+<p>C&rsquo;est beau Python&hellip;</p>
+                    </div>
+                    
+                </section>
+            </div>
+            <div class="footer">
+    <div class="pure-menu pure-menu-horizontal pure-menu-open">
+        <ul>
+            <li>Powered by <a class="hugo" href="https://gohugo.io/" target="_blank">hugo</a></li>
+        </ul>
+    </div>
+</div>
+<script src="/js/all.min.js"></script>
+
+        </div>
+    </div>
+</div>
+
+
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-65778407-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+
+</body>
+</html>

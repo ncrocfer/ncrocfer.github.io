@@ -1,0 +1,982 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Posts &middot; Nicolas Crocfer</title>
+
+    <meta name="description" content="Python Developer">
+
+    <meta name="generator" content="Hugo 0.42.2" />
+    <meta name="twitter:card" content="summary">
+    
+    <meta name="twitter:title" content="Posts &middot; Nicolas Crocfer">
+    <meta name="twitter:description" content="Python Developer">
+
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Posts &middot; Nicolas Crocfer">
+    <meta property="og:description" content="Python Developer">
+
+    <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Oxygen:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/pure-min.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/grids-responsive-min.css">
+
+    <link rel="stylesheet" href="/css/all.min.css">
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <link rel="alternate" type="application/rss+xml" title="Nicolas Crocfer" href="/index.xml" />
+</head>
+<body>
+
+
+<div id="layout" class="pure-g">
+    <div class="sidebar pure-u-1 pure-u-md-1-4">
+    <div class="header">
+        <hgroup>
+            <h1 class="brand-title"><a href="">Nicolas Crocfer</a></h1>
+            <h2 class="brand-tagline"> Python Developer </h2>
+        </hgroup>
+
+        <nav class="nav">
+            <ul class="nav-list">
+                
+                <li class="nav-item">
+                    <a class="pure-button" href="https://twitter.com/ncrocfer">
+                        <i class="fa fa-twitter"></i> Twitter
+                    </a>
+                </li>
+                
+                
+                <li class="nav-item">
+                    <a class="pure-button" href="https://github.com/ncrocfer">
+                        <i class="fa fa-github-alt"></i> Github
+                    </a>
+                </li>
+                
+                
+                
+                <li class="nav-item">
+                    <a class="pure-button" href="/index.xml">
+                        <i class="fa fa-rss"></i> rss
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+    <div class="content pure-u-1 pure-u-md-3-4">
+        <div>
+            
+            <div class="posts">
+                
+                <h1 class="content-subhead">07 Aug 2017, 01:03</h1>
+                <section class="post">
+                    <header class="post-header">
+
+                        <a href="/posts/gerer-vos-cve-avec-saucs/" class="post-title">Gérer vos CVE avec Saucs</a>
+
+                        <p class="post-meta">
+                            
+                            
+                        </p>
+                    </header>
+
+                    <div class="post-description">
+                        <p>Je vais vous présenter un projet infosec sur lequel je travaille depuis plusieurs mois : <a href="https://www.saucs.com">Saucs.com</a>.</p>
+
+<p>Cette plateforme web vous permet de manager vos alertes de sécurité en vous abonnant à différents produits et vendeurs. Dès lors qu&rsquo;une nouvelle vulnérabilité est détectée, une alerte est créée et un rapport vous est envoyé par mail.</p>
+
+<p></p>
+
+<p>Vous pouvez également <a href="https://www.saucs.com/cve">rechercher les vulnérabilités</a> par produit ou plus globalement par vendeur :</p>
+
+<img src="/images/saucs_cves.png" alt="" class="pure-img" >
+
+<p>Saucs se repose sur les bases maintenues par le <a href="https://cve.mitre.org/">MITRE</a> et le <a href="https://nvd.nist.gov/vuln/full-listing">NVD</a> pour se synchroniser :</p>
+
+<ul>
+<li><strong>CVE</strong> (Common Vulnerability Enumeration),</li>
+<li><strong>CPE</strong> (Common Platform Enumeration),</li>
+<li><strong>CWE</strong> (Common Weakness Enumeration),</li>
+<li><strong>CVSS</strong> (Common Vulnerability Scoring System).</li>
+</ul>
+
+<p>Ces bases contiennent des données organisées permettant de classifier les vulnérabilités relatives à des produits. Saucs utilise par exemple les CPE afin de fournir une liste de vendeurs et de produits auxquels s&rsquo;abonner :</p>
+
+<img src="/images/saucs_vendors_products.png" alt="" class="pure-img" >
+
+<p>Concrètement les <a href="http://www.google.com">données fournies</a> par le NVD sont parsées régulièrement et des tâches Celery analysent les abonnements des utilisateurs pour envoyer les notifications. Il peut s&rsquo;agir d&rsquo;une nouvelle CVE, mais également de la modification d&rsquo;une CVE existante : nouvelle référence, changement du score CVSS, etc.</p>
+
+<img src="/images/saucs_email.png" alt="" class="pure-img" >
+
+<p>J&rsquo;ai débuté ce projet seul : c&rsquo;est une idée que j&rsquo;avais en tête depuis pas mal de temps, et en tant que dev Python aucun problème pour créer le site et les robots. Mais ceux qui administrent leur propre site le savent, un site web ce n&rsquo;est pas que du dev :)</p>
+
+<p>J&rsquo;ai donc rapidement été rejoint par <a href="https://twitter.com/LaurentDurnez">Laurent</a> pour prendre en charge la partie administration : il gère entre autres les serveurs web, les mails, le load balancing, le scaling automatique, l&rsquo;architecture master/slave des databases, leur réplication, etc. Il fera d&rsquo;ailleurs prochainement un article sur le blog de Saucs afin d&rsquo;expliquer comment bootstraper rapidement une architecture HA et fault tolerant.</p>
+
+<p>Côté dev le site est entièrement codé en Python, grâce au framework Flask. Les tâches asynchrones (comme le parsing des CVE, la création des reports, l&rsquo;envoie de mail, la mise en cache) sont prises en charge par Celery.</p>
+
+<p>Je ne rentre pas plus en détail pour le moment sur ces aspects techniques puisque des articles dédiés seront mis en ligne sur le <a href="https://blog.saucs.com">blog officiel</a> de Saucs. Nous aimerions décrire les changements qui interviendront sur l&rsquo;architecture de la plateforme au fur et à mesure que celle-ci grandira.</p>
+
+<p>En parlant de ça, nous avons lancé le site il y a 3 semaines pour tâter le terrain et savoir si ce genre d&rsquo;outil pouvait être utile à d&rsquo;autres personne. Une semaine après l&rsquo;envoi d&rsquo;un premier <a href="https://twitter.com/ncrocfer/status/884711385686577152">Tweet</a> nous étions déjà à 500 utilisateurs! Nous avons reçus beaucoup de feedbacks, notamment des demandes sur l&rsquo;ajout d&rsquo;autres sources ainsi qu&rsquo;un système de filtres d&rsquo;alertes.</p>
+
+<p>C&rsquo;est donc ce que nous allons faire dans les semaines à venir, à commencer par le système de <strong>Report</strong> qui a été lancé ce week-end :</p>
+
+<img src="/images/saucs_report.png" alt="" class="pure-img" >
+
+<p>Au niveau des fonctionnalités à venir, nous avons énormément d&rsquo;idées :</p>
+
+<ul>
+<li>filtrer les types de notifications,</li>
+<li>ajout de nouvelles sources (DSA par exemple),</li>
+<li>intégration de sources externes pour les notifications (Slack, Mattermost&hellip;),</li>
+<li>discussions au sein de chaque CVE,</li>
+<li>API / SDK,</li>
+<li>applications mobiles,</li>
+<li>etc.</li>
+</ul>
+
+<p>Bref comme vous le voyez nous avons pas mal d&rsquo;idées, et nous pensons que Saucs peut avoir un réel intérêt pour les particuliers comme pour les entreprises.</p>
+
+<p>N&rsquo;hésitez pas à nous contacter sur Twitter (<a href="https://twitter.com/LaurentDurnez">Laurent</a> ou <a href="https://twitter.com/ncrocfer">moi</a>) , tout feedback est le bienvenu :)</p>
+                    </div>
+                </section>
+                
+                <h1 class="content-subhead">23 Dec 2015, 23:22</h1>
+                <section class="post">
+                    <header class="post-header">
+
+                        <a href="/posts/installer-un-module-a-la-creation-dun-virtualenv/" class="post-title">Installer un module à la création d&#39;un virtualenv</a>
+
+                        <p class="post-meta">
+                            
+                            
+                        </p>
+                    </header>
+
+                    <div class="post-description">
+                        <p>L&rsquo;utilisation des environnements virtuels (avec <strong>Virtualenv</strong> et <strong>Virtualenvwrapper</strong>) est inévitable si vous développez régulièrement en Python. D&rsquo;une part leur utilisation permet de laisser votre hôte propre, et d&rsquo;autre part différentes versions d&rsquo;un même module peuvent être testées de manière très simple.</p>
+
+<p></p>
+
+<p>En revanche aucun module n&rsquo;est disponible par défaut dans un nouvel environnement récemment créé.</p>
+
+<p>Pour cela 2 solutions existent : la première est d&rsquo;importer les modules disponibles dans l&rsquo;environnement global (votre host). En gros un <strong>pip freeze</strong> dans votre host et dans votre virtualenv renverra le même résultat :</p>
+
+<pre><code class="language-bash">$ mkvirtualenv foo --system-site-packages
+</code></pre>
+
+<p>L&rsquo;idée est d&rsquo;installer et de mettre à jour sur votre host les modules que vous utilisez le plus souvent, et d&rsquo;installer dans le virtualenv ceux qui sont plus spécifiques à chaque projet.</p>
+
+<p>La seconde solution, si vous ne souhaitez vraiment rien installer sur le host, et d&rsquo;installer automatiquement les modules à la création du virtualenv. C&rsquo;est dans le fichier <strong>~/.virtualenvs/postmkvirtualenv</strong> que les commandes se font :</p>
+
+<pre><code class="language-bash">#!/bin/bash
+# This hook is sourced after a new virtualenv is activated.
+
+pip install requests
+pip install httpie
+</code></pre>
+
+<p>La création de l&rsquo;environnement est un peu plus longue mais les modules sont directement disponibles dans leur dernière version :</p>
+
+<pre><code class="language-bash">$ mkvirtualenv foo
+New python executable in foo/bin/python
+Installing setuptools, pip...done.
+Downloading/unpacking requests
+  Downloading requests-2.9.1-py2.py3-none-any.whl (501kB): 501kB downloaded
+Installing collected packages: requests
+Successfully installed requests
+Cleaning up...
+Downloading/unpacking httpie
+  Downloading httpie-0.9.2-py2.py3-none-any.whl (66kB): 66kB downloaded
+Requirement already satisfied (use --upgrade to upgrade): requests&gt;=2.3.0 in /home/ncrocfer/.virtualenvs/foo/lib/python2.7/site-packages (from httpie)
+Downloading/unpacking Pygments&gt;=1.5 (from httpie)
+  Downloading Pygments-2.0.2-py2-none-any.whl (672kB): 672kB downloaded
+Installing collected packages: httpie, Pygments
+Successfully installed httpie Pygments
+Cleaning up...
+(foo) $ pip freeze
+Pygments==2.0.2
+argparse==1.2.1
+httpie==0.9.2
+requests==2.9.1
+wsgiref==0.1.2
+(foo) $
+</code></pre>
+                    </div>
+                </section>
+                
+                <h1 class="content-subhead">08 Dec 2015, 22:58</h1>
+                <section class="post">
+                    <header class="post-header">
+
+                        <a href="/posts/twitter-calendar/" class="post-title">Twitter calendar</a>
+
+                        <p class="post-meta">
+                            
+                            
+                        </p>
+                    </header>
+
+                    <div class="post-description">
+                        <p>Si vous utilisez de temps à autre Github, vous êtes déjà probablement tombé sur le profil d&rsquo;un développeur avec le calendrier de ses contributions. Plus le nombre de contributions est élevé, plus la couleur de la case sera foncée.</p>
+
+<p></p>
+
+<p>Je suis tombé sur la librairie <a href="https://github.com/wa0x6e/cal-heatmap">cal-heatmap</a> qui permet de faire exactement la même chose avec les données que l&rsquo;on souhaite. J&rsquo;ai donc décidé de créer l&rsquo;équivalent pour Twitter, afin de visualiser facilement le <strong>nombre de Tweets envoyés par jour</strong> pour un utilisateur donné :</p>
+
+<img src="/images/twitter-calendar.png" alt="" class="pure-img" >
+
+<p>Ce calendrier représente les Tweets envoyés sur mon <a href="https://twitter.com/ncrocfer">compte Twitter</a>. Les données datent un peu puisque j&rsquo;ai poussé le code sur Github il y a déjà quelques mois (et j&rsquo;ai la flemme de refaire un screenshot ^^).</p>
+
+<p>Les sources sont disponibles sur Github à <a href="https://github.com/ncrocfer/twitter-calendar">cette adresse</a>.</p>
+
+<p>Alors ok, ce n&rsquo;est pas super utile, mais je trouve plutôt sympa d&rsquo;avoir une représentation visuelle de son activité quotidienne sur Twitter. Et c&rsquo;est un bon exemple de ce qu&rsquo;il est possible de faire avec ce module javascript.</p>
+                    </div>
+                </section>
+                
+                <h1 class="content-subhead">30 Nov 2015, 21:01</h1>
+                <section class="post">
+                    <header class="post-header">
+
+                        <a href="/posts/autoreload-des-modules-sous-ipython/" class="post-title">Autoreload des modules sous iPython</a>
+
+                        <p class="post-meta">
+                            
+                            
+                        </p>
+                    </header>
+
+                    <div class="post-description">
+                        <p>Si vous utilisez iPython comme interpréteur Python (et si ce n&rsquo;est pas le cas vous loupez quelque chose), il vous est certainement déjà arrivé de bosser dessus dans un terminal, dans un autre de modifier l&rsquo;un des modules importés, puis de relancer la fonction dans iPython. Sauf que ce dernier n&rsquo;a pas rechargé le code et que le résultat est le même qu&rsquo;avant.</p>
+
+<p></p>
+
+<p>Prenez par exemple le code suivant :</p>
+
+<pre><code class="language-python">def calcul(a, b):
+    print(a+b)
+</code></pre>
+
+<p>Bon ok c&rsquo;est bidon, mais c&rsquo;est pour montrer le principe. Dans un autre terminal, démarrez iPython puis testez-le :</p>
+
+<pre><code class="language-python">In [1]: from calcul import calcul
+In [2]: calcul(2, 3)
+5
+</code></pre>
+
+<p>Si vous modifiez la fonction dans le second terminal, par exemple :</p>
+
+<pre><code class="language-python">def calcul(a, b):
+    print(a*b)
+</code></pre>
+
+<p>La mise à jour ne sera pas répercutée dans iPython, il faudrait le fermer puis le relancer. L&rsquo;activation de l&rsquo;<strong>autoreload</strong> permet d&rsquo;éviter cela :</p>
+
+<pre><code class="language-ipython">In [3]: calcul(2, 3)
+5
+
+In [4]: %load_ext autoreload
+
+In [5]: %autoreload 2
+
+# ré-enregistrez le module calcul.py
+
+In [6]: calcul(2, 3)
+6
+</code></pre>
+
+<p>Comme vous le voyez les modifications effectuées après l&rsquo;activation de l&rsquo;extension sont automatiquement pris en compte. Si vous souhaitez que l&rsquo;extension soit activée à chaque session, il faut créer un nouveau profile :</p>
+
+<pre><code class="language-bash">ncrocfer@home:~/ ipython profile create
+[ProfileCreate] Generating default config file: '/home/ncrocfer/.ipython/profile_default/ipython_config.py'
+</code></pre>
+
+<p>Puis ajoutez à la fin les lignes suivantes :</p>
+
+<pre><code class="language-bash">c.InteractiveShellApp.exec_lines = []
+c.InteractiveShellApp.exec_lines.append('%load_ext autoreload')
+c.InteractiveShellApp.exec_lines.append('%autoreload 2')
+</code></pre>
+
+<p>L&rsquo;autoreload des modules importés s&rsquo;effectuera désormais automatiquement !</p>
+                    </div>
+                </section>
+                
+                <h1 class="content-subhead">27 Nov 2015, 00:10</h1>
+                <section class="post">
+                    <header class="post-header">
+
+                        <a href="/posts/installer-python-3-5-1rc1/" class="post-title">Installer Python 3 5 1rc1</a>
+
+                        <p class="post-meta">
+                            
+                            
+                        </p>
+                    </header>
+
+                    <div class="post-description">
+                        <p>La version 3.5.1rc1 de Python est sortie cette semaine, incluant <a href="https://docs.python.org/3.5/whatsnew/changelog.html#python-3-5-1-release-candidate-1">de nombreuses corrections</a>.</p>
+
+<p>Voici comment l&rsquo;installer si vous souhaitez la tester. Sur mon laptop j&rsquo;ai un répertoire dans lequel je place les sources des différentes versions de Python (<strong>~/dev/python/src</strong>), et un autre dans lequel je compile les binaires (<strong>~/dev/python/bin</strong>).</p>
+
+<p></p>
+
+<p>On commence par télécharger les sources :</p>
+
+<pre><code class="language-bash">ncrocfer@home:~$ cd ~/dev/python/src
+ncrocfer@home:~/dev/python/src$ wget https://www.python.org/ftp/python/3.5.1/Python-3.5.1rc1.tgz
+ncrocfer@home:~/dev/python/src$ tar xzvf Python-3.5.1rc1.tgz
+ncrocfer@home:~/dev/python/src$ cd Python-3.5.1rc1/
+</code></pre>
+
+<p>On compile ensuite les sources, en choisissant le répertoire de destination souhaité :</p>
+
+<pre><code class="language-bash">ncrocfer@home:~/dev/python/src/Python-3.5.1rc1$ ./configure --prefix=&quot;/home/ncrocfer/dev/python/bin/3.5.1rc1/&quot;
+ncrocfer@home:~/dev/python/src/Python-3.5.1rc1$ make
+ncrocfer@home:~/dev/python/src/Python-3.5.1rc1$ make install
+</code></pre>
+
+<p>Vous pouvez désormais tester Python 3.5.1rc1 :</p>
+
+<pre><code class="language-bash">ncrocfer@home:~$ cd ~/dev/python/bin/3.5.1rc1/bin/
+ncrocfer@home:~/dev/python/bin/3.5.1rc1/bin$ ./python3
+Python 3.5.1rc1 (default, Nov 27 2015, 00:32:21)
+[GCC 4.8.4] on linux
+Type &quot;help&quot;, &quot;copyright&quot;, &quot;credits&quot; or &quot;license&quot; for more information.
+&gt;&gt;&gt;
+</code></pre>
+
+<p>A noter que cette méthode fonctionne évidemment pour les autres versions de Python. Utile si vous devez tester votre code sur une version spécifique de Python non packagée dans votre système de paquet.</p>
+                    </div>
+                </section>
+                
+                <h1 class="content-subhead">24 Nov 2015, 23:18</h1>
+                <section class="post">
+                    <header class="post-header">
+
+                        <a href="/posts/netstat-sur-debian-8-jessie/" class="post-title">netstat sur Debian 8 Jessie</a>
+
+                        <p class="post-meta">
+                            
+                            
+                        </p>
+                    </header>
+
+                    <div class="post-description">
+                        <p>Lorsqu&rsquo;on utilise docker pour développer, on ne sait pas toujours sur quel OS on va tomber. Tout dépend du choix du créateur de l&rsquo;image : on tombera parfois sur du Debian, parfois sur du Ubuntu, parfois encore sur du CentOS.</p>
+
+<p></p>
+
+<p>En revanche je me suis rendu compte que la plupart (la totalité ?) des images officielles proposées par Docker étaient quant à elles basées sur Debian. Même si parfois elles diffèrent de version (exemple avec l&rsquo;image <a href="https://github.com/docker-library/redis/blob/8929846148513a1e35e4212003965758112f8b55/3.0/Dockerfile">Redis</a> sous Wheezy et l&rsquo;image <a href="https://github.com/docker-library/rabbitmq/blob/60e5665854131f7fcb9ab0285d7d52ac932efb43/Dockerfile">RabbitMQ</a> sous Jessie), on reste quand même sur du Debian. Et l&rsquo;image officielle Python ne fait pas exception à cette règle.</p>
+
+<p>Du coup pas de netstat de base pour tester si votre gunicorn écoute sur le bon port ou s&rsquo;il est accessible sur localhost ou sur 0.0.0.0 (open bar).</p>
+
+<p>Alors si comme moi vous avez bêtement tenté de rechercher le paquet netstat et que vous êtes tombé sur ça :</p>
+
+<pre><code class="language-bash">ncrocfer@home:~$ docker run -it python:3.4 /bin/bash
+root@caa036eb3980:/# apt-get update
+...
+...
+root@caa036eb3980:/# apt-cache search netstat
+libparse-netstat-perl - module to parse the output of the &quot;netstat&quot; command
+netstat-nat - tool that display NAT connections
+root@caa036eb3980:/#
+</code></pre>
+
+<p>Eh bien sachez que l&rsquo;outil se situe dans le paquet <strong>net-tools</strong> :</p>
+
+<pre><code class="language-bash">root@caa036eb3980:/# apt-get install net-tools
+</code></pre>
+
+<p>Vous pouvez maintenant lancer vos services et vérifiez leurs connexions :</p>
+
+<pre><code class="language-bash">root@caa036eb3980:/# pip install flask
+root@caa036eb3980:/# cat &gt; app.py &lt;&lt;- EOM
+&gt; from flask import Flask
+&gt; app = Flask(__name__)
+&gt;
+&gt; @app.route(&quot;/&quot;)
+&gt; def hello():
+&gt;     return &quot;Hello World!&quot;
+&gt;
+&gt; if __name__ == &quot;__main__&quot;:
+&gt;     app.run()
+&gt; EOM
+root@caa036eb3980:/# python app.py &amp;
+[1] 104
+root@caa036eb3980:/# netstat -plnt
+Active Internet connections (only servers)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name
+tcp        0      0 127.0.0.1:5000          0.0.0.0:*               LISTEN      -
+root@caa036eb3980:/#
+</code></pre>
+                    </div>
+                </section>
+                
+                <h1 class="content-subhead">27 Sep 2015, 18:16</h1>
+                <section class="post">
+                    <header class="post-header">
+
+                        <a href="/posts/formater-du-json-dans-le-terminal/" class="post-title">Formater du JSON dans le terminal</a>
+
+                        <p class="post-meta">
+                            
+                            
+                        </p>
+                    </header>
+
+                    <div class="post-description">
+                        <p>Il m&rsquo;arrive de devoir lire un fichier JSON dans le terminal. Dans bien des cas malheureusement ce fichier n&rsquo;est pas formaté et la lecture est quasiment impossible.</p>
+
+<p></p>
+
+<p>Par exemple avec ce fichier <strong>customers.json</strong> :</p>
+
+<pre><code class="language-bash">$ more customers.json
+    [ { &quot;_id&quot;: &quot;56081479e15e4ab842a896e8&quot;, &quot;index&quot;: 0, &quot;guid&quot;: &quot;5a6b6434-e2c0-4c03-8103-a7009132a3c6&quot;, &quot;isActive&quot;: false, &quot;balance&quot;: &quot;$3,324.04&quot;, &quot;picture&quot;: &quot;http://placehold.it/32x32&quot;, &quot;age&quot;: 30, &quot;eyeColor&quot;: &quot;brown&quot;, &quot;name&quot;: &quot;Joan Maldonado&quot;, &quot;gender&quot;: &quot;female&quot;, &quot;company&quot;: &quot;PLASMOS&quot;, &quot;email&quot;: &quot;joanmaldonado@plasmos.com&quot;, &quot;phone&quot;: &quot;+1 (882) 446-3244&quot;, &quot;address&quot;: &quot;904 Will Place, Vincent, New Hampshire, 791&quot;, &quot;about&quot;: &quot;Enim velit reprehenderit aliquip nulla sint. Commodo et magna pariatur Lorem. Ut esse ut aliquip nulla et labore aute veniam qui ex et. Do proident elit occaecat id enim id ad fugiat nostrud. Amet non minim cupidatat sint voluptate ullamco. Consequat commodo sunt elit mollit consequat labore nisi excepteur sint ex consequat.\r\n&quot;, &quot;registered&quot;: &quot;2014-07-22T10:21:02 -02:00&quot;, &quot;latitude&quot;: 20.049304, &quot;longitude&quot;: -116.525111, &quot;tags&quot;: [ &quot;in&quot;, &quot;non&quot;, &quot;esse&quot;, &quot;Lorem&quot;, &quot;dolor&quot;, &quot;id&quot;, &quot;officia&quot; ], &quot;friends&quot;: [ { &quot;id&quot;: 0, &quot;name&quot;: &quot;Gardner Reese&quot; }, { &quot;id&quot;: 1, &quot;name&quot;: &quot;Iva Flores&quot; }, { &quot;id&quot;: 2, &quot;name&quot;: &quot;Walters Young&quot; } ], &quot;greeting&quot;: &quot;Hello, Joan Maldonado! You have 3 unread messages.&quot;, &quot;favoriteFruit&quot;: &quot;apple&quot; }, { &quot;_id&quot;: &quot;56081479db98561a62a7679d&quot;, &quot;index&quot;: 1, &quot;guid&quot;: &quot;6109f36b-c17b-4a7d-9c3d-82b5afed5b08&quot;, &quot;isActive&quot;: false, &quot;balance&quot;: &quot;$2,768.70&quot;, &quot;picture&quot;: &quot;http://placehold.it/32x32&quot;, &quot;age&quot;: 26, &quot;eyeColor&quot;: &quot;green&quot;, &quot;name&quot;: &quot;Tisha Patel&quot;, &quot;gender&quot;: &quot;female&quot;, &quot;company&quot;: &quot;KIOSK&quot;, &quot;email&quot;: &quot;tishapatel@kiosk.com&quot;, &quot;phone&quot;: &quot;+1 (860) 531-3279&quot;, &quot;address&quot;: &quot;500 Caton Place, Rockingham, Kansas, 7867&quot;, &quot;about&quot;: &quot;Magna do ullamco commodo Lorem ullamco eu sit enim dolor. Enim est eiusmod irure commodo ad duis veniam officia dolor incididunt veniam in proident. Magna eiusmod cillum sit nisi ullamco nostrud velit laboris sint enim ad voluptate nulla quis. Voluptate consectetur excepteur eiusmod sunt. Labore officia ea laborum quis tempor magna laboris nostrud aute adipisicing non.\r\n&quot;, &quot;registered&quot;: &quot;2015-08-23T12:53:27 -02:00&quot;, &quot;latitude&quot;: -40.008583, &quot;longitude&quot;: 94.809866, &quot;tags&quot;: [ &quot;dolore&quot;, &quot;et&quot;, &quot;laborum&quot;, &quot;occaecat&quot;, &quot;aute&quot;, &quot;laboris&quot;, &quot;officia&quot; ], &quot;friends&quot;: [ { &quot;id&quot;: 0, &quot;name&quot;: &quot;Phyllis Mccullough&quot; }, { &quot;id&quot;: 1, &quot;name&quot;: &quot;Mercedes Bullock&quot; }, { &quot;id&quot;: 2, &quot;name&quot;: &quot;Virginia Witt&quot; } ], &quot;greeting&quot;: &quot;Hello, Tisha Patel! You have 8 unread messages.&quot;, &quot;favoriteFruit&quot;: &quot;apple&quot; }, { &quot;_id&quot;: &quot;5608147988cc9bbeebd14516&quot;, &quot;index&quot;: 2, &quot;guid&quot;: &quot;f0bb0639-5d2a-47e1-883d-21fb53fb3d4c&quot;, &quot;isActive&quot;: true, &quot;balance&quot;: &quot;$2,235.78&quot;, &quot;picture&quot;: &quot;http://placehold.it/32x32&quot;, &quot;age&quot;: 23, &quot;eyeColor&quot;: &quot;brown&quot;, &quot;name&quot;: &quot;Elvia Gaines&quot;, &quot;gender&quot;: &quot;female&quot;, &quot;company&quot;: &quot;GYNK&quot;, &quot;email&quot;: &quot;elviagaines@gynk.com&quot;, &quot;phone&quot;: &quot;+1 (991) 513-2225&quot;, &quot;address&quot;: &quot;612 Canton Court, Grapeview, Michigan, 1411&quot;, &quot;about&quot;: &quot;Ipsum incididunt ad occaecat occaecat ipsum adipisicing sunt veniam aliquip commodo. Ad mollit elit anim nulla dolor aute elit qui tempor cupidatat anim nulla incididunt. Lorem ex non et aute laborum. Et esse qui consequat quis labore. Irure commodo incididunt Lorem magna ullamco. Reprehenderit consequat tempor cupidatat eiusmod magna in laboris adipisicing.\r\n&quot;, &quot;registered&quot;: &quot;2015-08-13T05:05:02 -02:00&quot;, &quot;latitude&quot;: -72.222724, &quot;longitude&quot;: 56.951741, &quot;tags&quot;: [ &quot;ullamco&quot;, &quot;cillum&quot;, &quot;excepteur&quot;, &quot;proident&quot;, &quot;do&quot;, &quot;do&quot;, &quot;voluptate&quot; ], &quot;friends&quot;: [ { &quot;id&quot;: 0, &quot;name&quot;: &quot;Jarvis Lambert&quot; }, { &quot;id&quot;: 1, &quot;name&quot;: &quot;Carla Ferguson&quot; }, { &quot;id&quot;: 2, &quot;name&quot;: &quot;Cline Combs&quot; } ], &quot;greeting&quot;: &quot;Hello, Elvia Gaines! You have 7 unread messages.&quot;, &quot;favoriteFruit&quot;: &quot;strawberry&quot; }, { &quot;_id&quot;: &quot;56081479a320a31282066ffb&quot;, &quot;index&quot;: 3, &quot;guid&quot;: &quot;11d34616-a325-4326-a4dd-260f26950ca8&quot;, &quot;isActive&quot;: true, &quot;balance&quot;: &quot;$2,083.11&quot;, &quot;picture&quot;: &quot;http://placehold.it/32x32&quot;, &quot;age&quot;: 24, &quot;eyeColor&quot;: &quot;blue&quot;, &quot;name&quot;: &quot;Sallie Barr&quot;, &quot;gender&quot;: &quot;female&quot;, &quot;company&quot;: &quot;TRANSLINK&quot;, &quot;email&quot;: &quot;salliebarr@translink.com&quot;, &quot;phone&quot;: &quot;+1 (911) 454-2623&quot;, &quot;address&quot;: &quot;714 Doughty Street, Grahamtown, North Dakota, 4512&quot;, &quot;about&quot;: &quot;Non incididunt do anim culpa adipisicing nostrud ullamco ea tempor. Enim duis quis pariatur excepteur ut voluptate et amet ut sint voluptate. Consectetur id irure mollit adipisicing veniam eiusmod veniam occaecat. Dolor consequat nulla dolor id velit eu irure. Cillum velit ad sunt fugiat officia cupidatat fugiat et consectetur amet tempor. Duis fugiat ipsum tempor ipsum fugiat nisi pariatur dolor cupidatat adipisicing ea nostrud velit. Eu nulla laborum fugiat ipsum occaecat non est quis do voluptate minim et officia.\r\n&quot;, &quot;registered&quot;: &quot;2014-08-10T03:51:55 -02:00&quot;, &quot;latitude&quot;: -74.14838, &quot;longitude&quot;: 24.023487, &quot;tags&quot;: [ &quot;elit&quot;, &quot;proident&quot;, &quot;aliquip&quot;, &quot;culpa&quot;, &quot;dolor&quot;, &quot;cupidatat&quot;, &quot;do&quot; ], &quot;friends&quot;: [ { &quot;id&quot;: 0, &quot;name&quot;: &quot;Aida Scott&quot; }, { &quot;id&quot;: 1, &quot;name&quot;: &quot;Cash Gillespie&quot; }, { &quot;id&quot;: 2, &quot;name&quot;: &quot;Bryan Hoover&quot; } ], &quot;greeting&quot;: &quot;Hello, Sallie Barr! You have 4 unread messages.&quot;, &quot;favoriteFruit&quot;: &quot;apple&quot; }, { &quot;_id&quot;: &quot;56081479a03f0f3f3f359e7b&quot;, &quot;index&quot;: 4, &quot;guid&quot;: &quot;d9bfb305-7c94-43ec-974a-12addf238468&quot;, &quot;isActive&quot;: false, &quot;balance&quot;: &quot;$3,170.81&quot;, &quot;picture&quot;: &quot;http://placehold.it/32x32&quot;, &quot;age&quot;: 39, &quot;eyeColor&quot;: &quot;brown&quot;, &quot;name&quot;: &quot;Frances Martinez&quot;, &quot;gender&quot;: &quot;female&quot;, &quot;company&quot;: &quot;CODACT&quot;, &quot;email&quot;: &quot;francesmartinez@codact.com&quot;, &quot;phone&quot;: &quot;+1 (887) 504-2517&quot;, &quot;address&quot;: &quot;609 Balfour Place, Emory, Colorado, 6617&quot;, &quot;about&quot;: &quot;Incididunt consequat deserunt reprehenderit eu laborum aliquip duis non fugiat mollit fugiat. Velit do eiusmod fugiat consequat aliquip fugiat anim mollit aliquip cupidatat cupidatat Lorem reprehenderit est. Dolore voluptate culpa labore minim. Commodo sunt commodo sint in exercitation aliquip aute aute sunt deserunt ea occaecat est irure. Minim aliqua proident est excepteur. Proident minim deserunt dolore adipisicing aliquip ipsum enim est consectetur amet fugiat excepteur ex. Tempor non officia exercitation ipsum ipsum est reprehenderit reprehenderit pariatur nulla fugiat reprehenderit consequat mollit.\r\n&quot;, &quot;registered&quot;: &quot;2014-07-18T08:39:15 -02:00&quot;, &quot;latitude&quot;: -11.888415, &quot;longitude&quot;: 150.058245, &quot;tags&quot;: [ &quot;enim&quot;, &quot;culpa&quot;, &quot;deserunt&quot;, &quot;est&quot;, &quot;elit&quot;, &quot;veniam&quot;, &quot;voluptate&quot; ], &quot;friends&quot;: [ { &quot;id&quot;: 0, &quot;name&quot;: &quot;Mooney Kelly&quot; }, { &quot;id&quot;: 1, &quot;name&quot;: &quot;Maddox Mills&quot; }, { &quot;id&quot;: 2, &quot;name&quot;: &quot;Olsen Perkins&quot; } ], &quot;greeting&quot;: &quot;Hello, Frances Martinez! You have 1 unread messages.&quot;, &quot;favoriteFruit&quot;: &quot;strawberry&quot; }, { &quot;_id&quot;: &quot;56081479d6f7624b753fbd24&quot;, &quot;index&quot;: 5, &quot;guid&quot;: &quot;f6f40203-43b5-46b4-90ef-4e03ac0410d9&quot;, &quot;isActive&quot;: true, &quot;balance&quot;: &quot;$2,787.96&quot;, &quot;picture&quot;: &quot;http://placehold.it/32x32&quot;, &quot;age&quot;: 34, &quot;eyeColor&quot;: &quot;green&quot;, &quot;name&quot;: &quot;Houston Kerr&quot;, &quot;gender&quot;: &quot;male&quot;, &quot;company&quot;: &quot;INCUBUS&quot;, &quot;email&quot;: &quot;houstonkerr@incubus.com&quot;, &quot;phone&quot;: &quot;+1 (912) 474-3368&quot;, &quot;address&quot;: &quot;802 Preston Court, Cataract, Kentucky, 5816&quot;, &quot;about&quot;: &quot;Eu amet nulla veniam nostrud magna id. Veniam elit qui exercitation esse esse excepteur reprehenderit ullamco et. Dolore officia Lorem pariatur tempor dolore Lorem quis enim ad aliqua. Sit sunt culpa aute consequat fugiat. Magna minim duis ea cillum quis duis proident tempor deserunt velit cupidatat nulla. Culpa eiusmod consectetur eiusmod labore.\r\n&quot;, &quot;registered&quot;: &quot;2014-10-12T09:08:48 -02:00&quot;, &quot;latitude&quot;: 33.730743, &quot;longitude&quot;: -17.213511, &quot;tags&quot;: [ &quot;sunt&quot;, &quot;dolor&quot;, &quot;sit&quot;, &quot;sit&quot;, &quot;eu&quot;, &quot;ad&quot;, &quot;ex&quot; ], &quot;friends&quot;: [ { &quot;id&quot;: 0, &quot;name&quot;: &quot;Marguerite Skinner&quot; }, { &quot;id&quot;: 1, &quot;name&quot;: &quot;Webster Sykes&quot; }, { &quot;id&quot;: 2, &quot;name&quot;: &quot;Wendy Campos&quot; } ], &quot;greeting&quot;: &quot;Hello, Houston Kerr! You have 5 unread messages.&quot;, &quot;favoriteFruit&quot;: &quot;strawberry&quot; } ]
+</code></pre>
+
+<p>Pour pallier à ce problème une solution est d&rsquo;utiliser le module JSON de Python :</p>
+
+<pre><code class="language-bash">$ python -m json.tool customers.json
+[
+    {
+        &quot;_id&quot;: &quot;56081479e15e4ab842a896e8&quot;,
+        &quot;about&quot;: &quot;Enim velit reprehenderit aliquip nulla sint. Commodo et magna pariatur Lorem. Ut esse ut aliquip nulla et labore aute veniam qui ex et. Do proident el
+it occaecat id enim id ad fugiat nostrud. Amet non minim cupidatat sint voluptate ullamco. Consequat commodo sunt elit mollit consequat labore nisi excepteur sint ex co
+nsequat.\r\n&quot;,
+        &quot;address&quot;: &quot;904 Will Place, Vincent, New Hampshire, 791&quot;,
+        &quot;age&quot;: 30,
+        &quot;balance&quot;: &quot;$3,324.04&quot;,
+        &quot;company&quot;: &quot;PLASMOS&quot;,
+        &quot;email&quot;: &quot;joanmaldonado@plasmos.com&quot;,
+        &quot;eyeColor&quot;: &quot;brown&quot;,
+        &quot;favoriteFruit&quot;: &quot;apple&quot;,
+        ...
+    }
+]
+</code></pre>
+
+<p>En revanche la coloration syntaxique n&rsquo;est pas prise en compte (bon ici le résultat est coloré, mais ce n&rsquo;est pas le cas dans le terminal). Pour cela on peut utiliser <strong>jq</strong>, qui est un parser complet de JSON intégrant une tonne d&rsquo;options. Nous allons simplement l&rsquo;utiliser pour formater et colorer notre fichier :</p>
+
+<pre><code class="language-bash">$ jq &quot;.&quot; customers.json
+[
+  {
+    &quot;favoriteFruit&quot;: &quot;apple&quot;,
+    &quot;greeting&quot;: &quot;Hello, Joan Maldonado! You have 3 unread messages.&quot;,
+    &quot;friends&quot;: [
+      {
+        &quot;name&quot;: &quot;Gardner Reese&quot;,
+        &quot;id&quot;: 0
+      },
+      {
+        &quot;name&quot;: &quot;Iva Flores&quot;,
+        &quot;id&quot;: 1
+      },
+      {
+        &quot;name&quot;: &quot;Walters Young&quot;,
+        &quot;id&quot;: 2
+      }
+    ],
+    ...
+  }
+]
+</code></pre>
+
+<p>Le &ldquo;.&rdquo; est l&rsquo;expression de base de <strong>jq</strong> qui permet de renvoyer le résultat sans le modifier.</p>
+
+<p>Bien sûr je ne montre ici que l&rsquo;utilisation basique de l&rsquo;outil. Comme je le disais avant il existe énormément d&rsquo;options et je vous invite à lire la <a href="https://stedolan.github.io/jq/manual/">doc</a> pour en savoir plus.</p>
+                    </div>
+                </section>
+                
+                <h1 class="content-subhead">14 Sep 2015, 23:19</h1>
+                <section class="post">
+                    <header class="post-header">
+
+                        <a href="/posts/separer-un-entier-tous-les-n-chiffres/" class="post-title">Séparer un entier tous les n chiffres</a>
+
+                        <p class="post-meta">
+                            
+                            
+                        </p>
+                    </header>
+
+                    <div class="post-description">
+                        <p>Sous Python, le découpage d&rsquo;une chaîne de caractères en plusieurs parties s&rsquo;effectue grâce à la méthode <strong>split()</strong>. Mais parfois cette dernière ne suffit pas : le découpage d&rsquo;un entier par bloc de 3 caractères par exemple.</p>
+
+<p>Dans ce cas il faudra en effet partir de la fin de l&rsquo;entier : <em>2000000</em> deviendra <em>2 000 000</em>, <em>1234</em> deviendra <em>1 234</em>, etc.</p>
+
+<p></p>
+
+<p>Ce type d&rsquo;affichage est régulièrement utilisé sur certains sites pour les statistiques, comme ici chez <a href="http://stackoverflow.com/10m">StackOverflow</a> :</p>
+
+<img src="/images/split_int.png" alt="" class="pure-img" >
+
+<p>Voici la méthode que j&rsquo;utilise pour cela :</p>
+
+<pre><code class="language-python">def split_int(number, separator=' ', count=3):
+    return separator.join(
+        [str(number)[::-1][i:i+count] for i in range(0, len(str(number)), count)]
+    )[::-1]
+</code></pre>
+
+<p>On peut l&rsquo;utiliser pour reproduire l&rsquo;affichage de StackOverflow :</p>
+
+<pre><code class="language-python">&gt;&gt;&gt; split_int(10144157, ',')
+10,144,157
+</code></pre>
+
+<h1 id="edit">Edit</h1>
+
+<p>J&rsquo;ai reçu un <a href="https://twitter.com/sam_et_max/status/644019728374235136">tweet</a> de <strong>@SamEtMax</strong> proposant une solution incluse dans la stdlib. Elle fonctionne grâce à la lib <strong>locale</strong> et sa méthode <strong>format</strong>, qui dispose de l&rsquo;argument <strong>grouping</strong>.</p>
+
+<p>L&rsquo;avantage principale de cette méthode est qu&rsquo;elle se base sur la localisation de l&rsquo;utilisateur : en France nous séparons les milliers par un espace (1 024), les Anglais utilisent la virgule (1,024) par exemple.</p>
+
+<p>La lib locale convertira l&rsquo;entier directement sous le bon format :</p>
+
+<pre><code class="language-python">&gt;&gt;&gt; import locale
+&gt;&gt;&gt; locale.setlocale(locale.LC_ALL, 'en_US.utf8')
+'en_US.utf8'
+&gt;&gt;&gt; print(locale.format(&quot;%d&quot;, 1024, grouping=True))
+1,024
+&gt;&gt;&gt; locale.setlocale(locale.LC_ALL, 'fr_FR.utf8')
+'fr_FR.utf8'
+&gt;&gt;&gt; print(locale.format(&quot;%d&quot;, 1024, grouping=True))
+1 024
+
+</code></pre>
+
+<p>Je ne connaissais pas et j&rsquo;avoue que c&rsquo;est beaucoup plus simple que ma fonction custom, je passerai par cette solution désormais :)</p>
+                    </div>
+                </section>
+                
+                <h1 class="content-subhead">27 Aug 2015, 18:05</h1>
+                <section class="post">
+                    <header class="post-header">
+
+                        <a href="/posts/creation-dapi-avec-scrapy-et-django/" class="post-title">Création d&#39;API Avec Scrapy et Django</a>
+
+                        <p class="post-meta">
+                            
+                            
+                        </p>
+                    </header>
+
+                    <div class="post-description">
+                        <p>La majorité des API se font désormais au format REST. Sous Django, de telles API peuvent facilement se créer grâce au toolkit <strong>Django REST framework</strong>.</p>
+
+<p>Nous allons voir dans cet article comment créer une API REST sous Django. Pour que l&rsquo;exemple soit ludique, nous créerons une API fournissant la liste complète des bières belge ! Pour cela nous utiliserons Scrapy afin de parser la page Wikipédia correspondante, puis nous utiliserons les modèles Django pour insérer les données en base.</p>
+
+<p></p>
+
+<h1 id="setup">Setup</h1>
+
+<p>On commence par créer un nouvel environnement virtuel qui contiendra l&rsquo;ensemble des packages utiles à notre projet :</p>
+
+<pre><code class="language-bash">$ mkvirtualenv beer-rest
+$ pip install Scrapy scrapy-djangoitem Django djangorestframework
+</code></pre>
+
+<p>Dans l&rsquo;ordre :</p>
+
+<ul>
+<li><strong>Scrapy</strong> va nous servir à parser la page Wikipédia et retourner les informations souhaitées,</li>
+<li><strong>scrapy-djangoitem</strong> nous permettra d&rsquo;utiliser les modèles Django dans notre projet Scrapy,</li>
+<li><strong>Django</strong> sera notre framework web,</li>
+<li><strong>djangorestframework</strong> va nous permettre de créer facilement notre API REST.</li>
+</ul>
+
+<p>Nous pouvons maintenant créer notre projet Django <strong>alcohol</strong>, ainsi que l&rsquo;application <strong>beer</strong> :</p>
+
+<pre><code class="language-bash">$ django-admin startproject alcohol
+$ cd alcohol
+$ ./manage.py startapp beer
+</code></pre>
+
+<h1 id="création-du-modèle">Création du modèle</h1>
+
+<p>La page Wikipédia <a href="https://fr.wikipedia.org/wiki/Liste_des_bi%C3%A8res_belges">suivante</a> propose la liste complète des bières belges, par ordre alphabétique.</p>
+
+<p>Nous allons enregistrer en base les informations données, à savoir :</p>
+
+<ul>
+<li>le nom de la bière</li>
+<li>le type</li>
+<li>la teneur en alcool</li>
+<li>la brasserie</li>
+</ul>
+
+<p>Voici le modèle correspondant :</p>
+
+<pre><code class="language-python"># ./alcohol/beer/models.py
+
+from django.db import models
+
+class Beer(models.Model):
+    nom = models.CharField(max_length=80)
+    type = models.CharField(max_length=30)
+    degre = models.CharField(max_length=6, null=True)
+    brasserie = models.CharField(max_length=80)
+
+    def __str__(self):
+        return self.nom
+</code></pre>
+
+<p>Certaines teneurs en alcool ne sont pas mentionnées, nous autorisons donc la valeur <strong>null</strong>.</p>
+
+<p>On active cette application dans le fichier <strong>settings.py</strong> de notre projet Django :</p>
+
+<pre><code class="language-python"># ./alcohol/alcohol/settings.py
+
+INSTALLED_APPS = (
+    ...
+    'beer'
+)
+</code></pre>
+
+<p>On synchronise ensuite la base de données :</p>
+
+<pre><code class="language-bash">$ ./manage.py makemigrations
+$ ./manage.py migrate
+</code></pre>
+
+<h1 id="récupération-des-bières-avec-scrapy">Récupération des bières avec Scrapy</h1>
+
+<p>Nous allons utiliser <strong>Scrapy</strong> pour extraire les données et les insérer en base.</p>
+
+<p>Toujours dans le dossier <strong>alcohol</strong>, nous créons un dossier <strong>scrapy</strong> qui contiendra nos crawlers (nous n&rsquo;en aurons qu&rsquo;un dans notre cas), puis nous initialisons un nouveau projet Scrapy :</p>
+
+<pre><code class="language-bash">$ mkdir scrapy
+$ cd scrapy
+$ scrapy startproject wikibeer
+$ cd wikibeer
+</code></pre>
+
+<p>Nous devrions normalement créer une sous-classe de <strong>scrapy.Item</strong>, contenant la liste des données souhaitées (nom, type, degre, brasserie). Néanmoins nous voulons que les données récupérées par Scrapy soient directement accessible via Django. Pour cela nous allons utiliser le package <strong>scrapy-djangoitem</strong> qui se chargera lui-même d&rsquo;insérer les éléments en base.</p>
+
+<p>Voici donc à quoi ressemble notre classe item :</p>
+
+<pre><code class="language-python"># -*- coding: utf-8 -*-
+# ./alcohol/scrapy/wikibeer/wikibeer/items.py
+
+from scrapy_djangoitem import DjangoItem
+from beer.models import Beer
+
+class WikibeerItem(DjangoItem):
+    django_model = Beer
+</code></pre>
+
+<p>L&rsquo;accès au modèle <strong>Beer</strong> de notre projet Django est rendu possible en ajoutant les lignes suitantes au fichier <strong>settings.py</strong> de votre projet Scrapy :</p>
+
+<pre><code class="language-python"># -*- coding: utf-8 -*-
+# ./alcohol/scrapy/wikibeer/wikibeer/settings.py
+
+import sys
+sys.path.append('/opt/projects/alcohol')
+
+import os
+os.environ['DJANGO_SETTINGS_MODULE'] = 'alcohol.settings'
+
+...
+</code></pre>
+
+<p>Pensez à modifier le chemin selon votre configuration.</p>
+
+<p>Il ne reste plus qu&rsquo;à créer notre spider qui se chargera de retourner les données contenues dans la page :</p>
+
+<pre><code class="language-python"># -*- coding: utf-8 -*-
+# ./alcohol/scrapy/wikibeer/wikibeer/spiders/wikibeer_spider.py
+
+import scrapy
+from wikibeer.items import WikibeerItem
+
+
+class WikibeerSpider(scrapy.Spider):
+    name = &quot;wikibeer&quot;
+    allowed_domains = [&quot;fr.wikipedia.org&quot;]
+    start_urls = [
+        &quot;https://fr.wikipedia.org/wiki/Liste_des_bi%C3%A8res_belges&quot;,
+    ]
+
+    def parse(self, response):
+        for sel in response.xpath('//table[contains(@class, &quot;wikitable&quot;)]//tr'):
+
+            # On vérifie qu'il ne s'agit pas du header du tableau
+            nom = sel.xpath('td[1]//text()').extract()
+            if not nom:
+                continue
+
+            item = WikibeerItem()
+            item['nom'] = &quot;&quot;.join(nom)
+            item['type'] = &quot;&quot;.join(sel.xpath('td[2]//text()').extract())
+            item['degre'] = &quot;&quot;.join(sel.xpath('td[3]//text()').extract())
+            item['brasserie'] = &quot;&quot;.join(sel.xpath('td[4]//text()').extract())
+
+            item.save()
+</code></pre>
+
+<p>Je ne m&rsquo;attarde pas sur ce code, n&rsquo;hésitez pas à jeter un oeil à la <a href="http://doc.scrapy.org/en/1.0/">documentation</a> de Scrapy si vous voulez plus d&rsquo;informations. Scrapy est un crawler web extrèmement puissant, et le spider précédent n&rsquo;exploite qu&rsquo;une infime partie de ses possibilités.</p>
+
+<p>Notez tout de même l&rsquo;utilisation de la méthode save() sur l&rsquo;item (plutôt que de le renvoyer via un yield) qui permet d&rsquo;enregistrer l&rsquo;objet en base.</p>
+
+<p>Le spider peut enfin être lancé grâce à la commande suivante :</p>
+
+<pre><code class="language-bash">$ scrapy crawl wikibeer
+2015-08-27 18:23:50 [scrapy] INFO: Scrapy 1.0.1 started (bot: wikibeer)
+2015-08-27 18:23:50 [scrapy] INFO: Optional features available: ssl, http11
+2015-08-27 18:23:50 [scrapy] INFO: Overridden settings: {'NEWSPIDER_MODULE': 'wikibeer.spiders', 'SPIDER_MODULES': ['wikibeer.spiders'], 'BOT_NAME': 'wikibeer'}
+2015-08-27 18:23:50 [scrapy] INFO: Enabled extensions: CloseSpider, TelnetConsole, LogStats, CoreStats, SpiderState
+2015-08-27 18:23:50 [scrapy] INFO: Enabled downloader middlewares: HttpAuthMiddleware, DownloadTimeoutMiddleware, UserAgentMiddleware, RetryMiddleware, DefaultHeadersMiddleware, MetaRefreshMiddleware, HttpCompressionMiddleware, RedirectMiddleware, CookiesMiddleware, ChunkedTransferMiddleware, DownloaderStats
+2015-08-27 18:23:50 [scrapy] INFO: Enabled spider middlewares: HttpErrorMiddleware, OffsiteMiddleware, RefererMiddleware, UrlLengthMiddleware, DepthMiddleware
+2015-08-27 18:23:50 [scrapy] INFO: Enabled item pipelines:
+2015-08-27 18:23:50 [scrapy] INFO: Spider opened
+2015-08-27 18:23:50 [scrapy] INFO: Crawled 0 pages (at 0 pages/min), scraped 0 items (at 0 items/min)
+2015-08-27 18:23:51 [scrapy] DEBUG: Telnet console listening on 127.0.0.1:6023
+2015-08-27 18:23:51 [scrapy] DEBUG: Crawled (200) &lt;GET https://fr.wikipedia.org/wiki/Liste_des_bi%C3%A8res_belges&gt; (referer: None)
+2015-08-27 18:23:52 [django.db.backends] DEBUG: (0.000) QUERY = u'BEGIN' - PARAMS = (); args=None
+2015-08-27 18:23:52 [django.db.backends] DEBUG: (0.001) QUERY = u'INSERT INTO &quot;beer_beer&quot; (&quot;nom&quot;, &quot;type&quot;, &quot;degre&quot;, &quot;brasserie&quot;) VALUES (%s, %s, %s, %s)' - PARAMS = (u'3 Scht\xe9ng', u'Fermentation haute', u'6\xa0%', u&quot;Brasserie Grain d'Orge&quot;); args=[u'3 Scht\xe9ng', u'Fermentation haute', u'6\xa0%', u&quot;Brasserie Grain d'Orge&quot;]
+2015-08-27 18:23:52 [scrapy] INFO: Received SIGINT, shutting down gracefully. Send again to force
+2015-08-27 18:23:52 [django.db.backends] DEBUG: (0.000) QUERY = u'BEGIN' - PARAMS = (); args=None
+2015-08-27 18:23:52 [django.db.backends] DEBUG: (0.000) QUERY = u'INSERT INTO &quot;beer_beer&quot; (&quot;nom&quot;, &quot;type&quot;, &quot;degre&quot;, &quot;brasserie&quot;) VALUES (%s, %s, %s, %s)' - PARAMS = (u'IV Saison', u'Saison', u'6,5\xa0%', u'Brasserie de Jandrain-Jandrenouille'); args=[u'IV Saison', u'Saison', u'6,5\xa0%', u'Brasserie de Jandrain-Jandrenouille']
+2015-08-27 18:23:52 [django.db.backends] DEBUG: (0.000) QUERY = u'BEGIN' - PARAMS = (); args=None
+2015-08-27 18:23:52 [django.db.backends] DEBUG: (0.000) QUERY = u'INSERT INTO &quot;beer_beer&quot; (&quot;nom&quot;, &quot;type&quot;, &quot;degre&quot;, &quot;brasserie&quot;) VALUES (%s, %s, %s, %s)' - PARAMS = (u'V Cense', u'Fermentation haute, Sp\xe9ciale', u'7,5\xa0%', u'Brasserie de Jandrain-Jandrenouille'); args=[u'V Cense', u'Fermentation haute, Sp\xe9ciale', u'7,5\xa0%', u'Brasserie de Jandrain-Jandrenouille']
+2015-08-27 18:23:52 [django.db.backends] DEBUG: (0.000) QUERY = u'BEGIN' - PARAMS = (); args=None
+2015-08-27 18:23:52 [django.db.backends] DEBUG: (0.000) QUERY = u'INSERT INTO &quot;beer_beer&quot; (&quot;nom&quot;, &quot;type&quot;, &quot;degre&quot;, &quot;brasserie&quot;) VALUES (%s, %s, %s, %s)' - PARAMS = (u'VI Wheat', u'Fermentation haute, Blanche', u'6\xa0%', u'Brasserie de Jandrain-Jandrenouille'); args=[u'VI Wheat', u'Fermentation haute, Blanche', u'6\xa0%', u'Brasserie de Jandrain-Jandrenouille']
+2015-08-27 18:23:52 [django.db.backends] DEBUG: (0.000) QUERY = u'BEGIN' - PARAMS = (); args=None
+2015-08-27 18:23:52 [django.db.backends] DEBUG: (0.000) QUERY = u'INSERT INTO &quot;beer_beer&quot; (&quot;nom&quot;, &quot;type&quot;, &quot;degre&quot;, &quot;brasserie&quot;) VALUES (%s, %s, %s, %s)' - PARAMS = (u'26.2 M', u'Blonde', u'4,8\xa0%', u&quot;Brasserie L'\xc9chapp\xe9e Belle&quot;); args=[u'26.2 M', u'Blonde', u'4,8\xa0%', u&quot;Brasserie L'\xc9chapp\xe9e Belle&quot;]
+...
+</code></pre>
+
+<p>Les données sont bien enregistrées en base de données, le tout en passant par notre modèle Django :</p>
+
+<img src="/images/scrapy-django-rest-1.png" alt="" class="pure-img" >
+
+<h1 id="mise-en-place-de-django-rest-framework">Mise en place de Django Rest Framework</h1>
+
+<p>Nous avons maintenant la liste entière des bières dans notre base de données. Nous pouvons créer un serializer basé sur notre modèle <strong>Beer</strong> :</p>
+
+<pre><code class="language-python"># ./alcohol/beer/serializers.py
+
+from beer.models import Beer
+from rest_framework import serializers
+
+class BeerSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Beer
+        fields = ('nom', 'type', 'degre', 'brasserie')
+</code></pre>
+
+<p>Nous créons ensuite une vue qui sera une sous-classe de <strong>rest_framework.viewsets.ModelViewSet</strong> dans laquelle nous renseignons la requête utilisée (toutes les bières) et le serializer créé précédemment :</p>
+
+<pre><code class="language-python"># ./alcohol/beer/views.py
+
+from rest_framework import viewsets
+from beer.models import Beer
+from beer.serializers import BeerSerializer
+
+class BeerViewSet(viewsets.ModelViewSet):
+    queryset = Beer.objects.all()
+    serializer_class = BeerSerializer
+</code></pre>
+
+<p>Les urls de notre projet doivent être renseignées dans le fichier <strong>alcohol/urls.py</strong> (dans notre cas l&rsquo;API sera accessible via <a href="http://localhost:8000/api/beers/">http://localhost:8000/api/beers/</a> :</p>
+
+<pre><code class="language-python"># ./alcohol/alcohol/urls.py
+
+from django.contrib import admin
+from django.conf.urls import url, include
+from rest_framework import routers
+from beer.views import BeerViewSet
+
+router = routers.DefaultRouter()
+router.register(r'api/beers', BeerViewSet)
+
+urlpatterns = [
+    url(r'^admin/', include(admin.site.urls)),
+    url(r'^', include(router.urls))
+]
+</code></pre>
+
+<p>Il ne reste plus qu&rsquo;à activer l&rsquo;application <strong>Django Rest Framework</strong> dans le fichier <strong>settings.py</strong> de notre projet Django :</p>
+
+<pre><code class="language-python"># ./alcohol/alcohol/settings.py
+
+INSTALLED_APPS = (
+        ...
+        'rest_framework',
+        'beer'
+)
+
+</code></pre>
+
+<h1 id="test-de-l-api">Test de l&rsquo;API</h1>
+
+<p>Et voilà ! Nous avons rapratrier un jeu de données via Scrapy, nous avons mis en place notre API via Django Rest Framework, nous pouvons désormais la tester.</p>
+
+<p>On lance tout d&rsquo;abord le serveur :</p>
+
+<pre><code class="language-python">$ ./manage.py runserver
+Performing system checks...
+
+System check identified no issues (0 silenced).
+August 27, 2015 - 18:28:08
+Django version 1.8.4, using settings 'alcohol.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+</code></pre>
+
+<p>Puis nous utilisons <strong>curl</strong> (par exemple) pour accéder à notre API :</p>
+
+<pre><code class="language-bash">$ curl -H 'Accept: application/json; indent=4' http://127.0.0.1:8000/api/beers/
+...
+{
+    &quot;nom&quot;: &quot;Abbaye du Park Blonde&quot;,
+    &quot;type&quot;: &quot;Abbaye, Blonde&quot;,
+    &quot;degre&quot;: &quot;6 %&quot;,
+    &quot;brasserie&quot;: &quot;Brasserie Haacht&quot;
+},
+{
+    &quot;nom&quot;: &quot;Abbaye du Park Brune&quot;,
+    &quot;type&quot;: &quot;Abbaye, Brune&quot;,
+    &quot;degre&quot;: &quot;6 %&quot;,
+    &quot;brasserie&quot;: &quot;Brasserie Haacht&quot;
+},
+{
+    &quot;nom&quot;: &quot;Abdis Blond&quot;,
+    &quot;type&quot;: &quot;Blonde&quot;,
+    &quot;degre&quot;: &quot;6,5 %&quot;,
+    &quot;brasserie&quot;: &quot;Brasserie Riva&quot;
+},
+{
+    &quot;nom&quot;: &quot;Abdis Bruin&quot;,
+    &quot;type&quot;: &quot;Brune&quot;,
+    &quot;degre&quot;: &quot;6,5 %&quot;,
+    &quot;brasserie&quot;: &quot;Brasserie Riva&quot;
+}
+...
+</code></pre>
+
+<p>Notez pour finir que <strong>Django Rest Framework</strong> fournit également une interface web pour consulter votre API :</p>
+
+<p><img src="/images/scrapy-django-rest-2.png" alt="" class="pure-img" >
+<img src="/images/scrapy-django-rest-3.png" alt="" class="pure-img" ></p>
+                    </div>
+                </section>
+                
+                <h1 class="content-subhead">19 Aug 2015, 00:30</h1>
+                <section class="post">
+                    <header class="post-header">
+
+                        <a href="/posts/serialiser-une-instance-de-classe-en-json-sous-python/" class="post-title">Sérialiser une instance de classe en JSON sous Python</a>
+
+                        <p class="post-meta">
+                            
+                            
+                        </p>
+                    </header>
+
+                    <div class="post-description">
+                        <p>Je me suis récemment confronté pour un projet perso à devoir sérialiser une instance de classe en JSON. J&rsquo;aurais très bien pu utiliser un autre type de sérialisation, comme Pickle, mais je suis habitué au JSON et je préfère rester sur ce format pour l&rsquo;ensemble de mes projets.</p>
+
+<p>Pour la serialisation nous devons passer par la méthode <strong>JSON.dumps()</strong>. A priori rien de bien compliqué pour des types basiques (list, dict, str, bool&hellip;), mais les instances de classe ne sont pas serialisables.</p>
+
+<p></p>
+
+<p>Prenons une classe toute simple :</p>
+
+<pre><code class="language-python"># -*- coding: utf-8 -*- 
+
+class MyClass(object):
+    def __init__(self):
+        self.var1 = &quot;foo&quot;
+        self.var2 = &quot;bar&quot;
+</code></pre>
+
+<p>Si vous essayez de sérialiser une instance de celle-ci, une exception sera levée :</p>
+
+<pre><code class="language-python">&gt;&gt;&gt; from myclass import MyClass
+&gt;&gt;&gt; import json
+&gt;&gt;&gt; obj = MyClass()
+&gt;&gt;&gt; json.dumps(obj)
+Traceback (most recent call last):
+  File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt;
+  File &quot;/usr/lib/python3.4/json/__init__.py&quot;, line 230, in dumps
+    return _default_encoder.encode(obj)
+  File &quot;/usr/lib/python3.4/json/encoder.py&quot;, line 192, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+  File &quot;/usr/lib/python3.4/json/encoder.py&quot;, line 250, in iterencode
+    return _iterencode(o, 0)
+  File &quot;/usr/lib/python3.4/json/encoder.py&quot;, line 173, in default
+    raise TypeError(repr(o) + &quot; is not JSON serializable&quot;)
+TypeError: &lt;myclass.MyClass object at 0x7f37074c8e10&gt; is not JSON serializable
+</code></pre>
+
+<p>Pour pallier à ce problème, la <a href="https://docs.python.org/3/library/json.html">documentation</a> suggère d&rsquo;utiliser une sous-classe de <strong>json.JSONEncoder</strong> et de retourner le résultat attendu dans la méthode <strong>default()</strong>. Ce qui donne dans notre cas :</p>
+
+<pre><code class="language-python">class MyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, MyClass):
+            return vars(obj)
+        else:
+            return json.JSONEncoder.default(self, obj)
+</code></pre>
+
+<p>On spécifie ensuite cet <em>encoder</em> dans l&rsquo;argument nommé <strong>cls</strong> :</p>
+
+<pre><code class="language-python">&gt;&gt;&gt; json.dumps(obj, cls=MyEncoder)
+'{&quot;var1&quot;: &quot;foo&quot;, &quot;var2&quot;: &quot;bar&quot;}'
+</code></pre>
+
+<p>Ca fonctionne, mais il existe une façon bien plus simple d&rsquo;arriver au même résultat sans devoir créer d&rsquo;<em>encoder</em> spécifique. Il suffit simplement d&rsquo;utiliser l&rsquo;attribut <strong>__dict__</strong> de l&rsquo;instance. Celui-ci retourne l&rsquo;ensemble des attributs internes d&rsquo;un objet sous forme de dictionnaire, et c&rsquo;est exactement ce que nous souhaitons :</p>
+
+<pre><code class="language-python">&gt;&gt;&gt; json.dumps(obj.__dict__)
+'{&quot;var1&quot;: &quot;foo&quot;, &quot;var2&quot;: &quot;bar&quot;}'
+</code></pre>
+
+<p>C&rsquo;est beau Python&hellip;</p>
+                    </div>
+                </section>
+                
+            </div>
+            
+<div class="pagination">
+  <nav role="pagination" class="post-list-pagination">
+      
+    <span class="post-list-pagination-item post-list-pagination-item-current">Page 1 of 2</span>
+    
+      <a href="/posts/page/2/" class="post-list-pagination-item pure-button post-list-pagination-item-next">
+        Older&nbsp;<i class="fa fa-angle-double-right"></i>
+      </a>
+    
+  </nav>
+</div>
+
+
+            <div class="footer">
+    <div class="pure-menu pure-menu-horizontal pure-menu-open">
+        <ul>
+            <li>Powered by <a class="hugo" href="https://gohugo.io/" target="_blank">hugo</a></li>
+        </ul>
+    </div>
+</div>
+<script src="/js/all.min.js"></script>
+
+        </div>
+    </div>
+</div>
+
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-65778407-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+
+</body>
+</html>

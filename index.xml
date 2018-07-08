@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Nicolas Crocfer</title>
+    <link>/</link>
+    <description>Recent content on Nicolas Crocfer</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>fr-FR</language>
+    <lastBuildDate>Mon, 07 Aug 2017 01:03:59 +0200</lastBuildDate>
+    
+	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Gérer vos CVE avec Saucs</title>
+      <link>/posts/gerer-vos-cve-avec-saucs/</link>
+      <pubDate>Mon, 07 Aug 2017 01:03:59 +0200</pubDate>
+      
+      <guid>/posts/gerer-vos-cve-avec-saucs/</guid>
+      <description>&lt;p&gt;Je vais vous présenter un projet infosec sur lequel je travaille depuis plusieurs mois : &lt;a href=&#34;https://www.saucs.com&#34;&gt;Saucs.com&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Cette plateforme web vous permet de manager vos alertes de sécurité en vous abonnant à différents produits et vendeurs. Dès lors qu&amp;rsquo;une nouvelle vulnérabilité est détectée, une alerte est créée et un rapport vous est envoyé par mail.&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Installer un module à la création d&#39;un virtualenv</title>
+      <link>/posts/installer-un-module-a-la-creation-dun-virtualenv/</link>
+      <pubDate>Wed, 23 Dec 2015 23:22:23 +0200</pubDate>
+      
+      <guid>/posts/installer-un-module-a-la-creation-dun-virtualenv/</guid>
+      <description>&lt;p&gt;L&amp;rsquo;utilisation des environnements virtuels (avec &lt;strong&gt;Virtualenv&lt;/strong&gt; et &lt;strong&gt;Virtualenvwrapper&lt;/strong&gt;) est inévitable si vous développez régulièrement en Python. D&amp;rsquo;une part leur utilisation permet de laisser votre hôte propre, et d&amp;rsquo;autre part différentes versions d&amp;rsquo;un même module peuvent être testées de manière très simple.&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Twitter calendar</title>
+      <link>/posts/twitter-calendar/</link>
+      <pubDate>Tue, 08 Dec 2015 22:58:21 +0200</pubDate>
+      
+      <guid>/posts/twitter-calendar/</guid>
+      <description>&lt;p&gt;Si vous utilisez de temps à autre Github, vous êtes déjà probablement tombé sur le profil d&amp;rsquo;un développeur avec le calendrier de ses contributions. Plus le nombre de contributions est élevé, plus la couleur de la case sera foncée.&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Autoreload des modules sous iPython</title>
+      <link>/posts/autoreload-des-modules-sous-ipython/</link>
+      <pubDate>Mon, 30 Nov 2015 21:01:09 +0200</pubDate>
+      
+      <guid>/posts/autoreload-des-modules-sous-ipython/</guid>
+      <description>&lt;p&gt;Si vous utilisez iPython comme interpréteur Python (et si ce n&amp;rsquo;est pas le cas vous loupez quelque chose), il vous est certainement déjà arrivé de bosser dessus dans un terminal, dans un autre de modifier l&amp;rsquo;un des modules importés, puis de relancer la fonction dans iPython. Sauf que ce dernier n&amp;rsquo;a pas rechargé le code et que le résultat est le même qu&amp;rsquo;avant.&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Installer Python 3 5 1rc1</title>
+      <link>/posts/installer-python-3-5-1rc1/</link>
+      <pubDate>Fri, 27 Nov 2015 00:10:32 +0200</pubDate>
+      
+      <guid>/posts/installer-python-3-5-1rc1/</guid>
+      <description>&lt;p&gt;La version 3.5.1rc1 de Python est sortie cette semaine, incluant &lt;a href=&#34;https://docs.python.org/3.5/whatsnew/changelog.html#python-3-5-1-release-candidate-1&#34;&gt;de nombreuses corrections&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Voici comment l&amp;rsquo;installer si vous souhaitez la tester. Sur mon laptop j&amp;rsquo;ai un répertoire dans lequel je place les sources des différentes versions de Python (&lt;strong&gt;~/dev/python/src&lt;/strong&gt;), et un autre dans lequel je compile les binaires (&lt;strong&gt;~/dev/python/bin&lt;/strong&gt;).&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>netstat sur Debian 8 Jessie</title>
+      <link>/posts/netstat-sur-debian-8-jessie/</link>
+      <pubDate>Tue, 24 Nov 2015 23:18:55 +0200</pubDate>
+      
+      <guid>/posts/netstat-sur-debian-8-jessie/</guid>
+      <description>&lt;p&gt;Lorsqu&amp;rsquo;on utilise docker pour développer, on ne sait pas toujours sur quel OS on va tomber. Tout dépend du choix du créateur de l&amp;rsquo;image : on tombera parfois sur du Debian, parfois sur du Ubuntu, parfois encore sur du CentOS.&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Formater du JSON dans le terminal</title>
+      <link>/posts/formater-du-json-dans-le-terminal/</link>
+      <pubDate>Sun, 27 Sep 2015 18:16:18 +0200</pubDate>
+      
+      <guid>/posts/formater-du-json-dans-le-terminal/</guid>
+      <description>&lt;p&gt;Il m&amp;rsquo;arrive de devoir lire un fichier JSON dans le terminal. Dans bien des cas malheureusement ce fichier n&amp;rsquo;est pas formaté et la lecture est quasiment impossible.&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Séparer un entier tous les n chiffres</title>
+      <link>/posts/separer-un-entier-tous-les-n-chiffres/</link>
+      <pubDate>Mon, 14 Sep 2015 23:19:17 +0200</pubDate>
+      
+      <guid>/posts/separer-un-entier-tous-les-n-chiffres/</guid>
+      <description>&lt;p&gt;Sous Python, le découpage d&amp;rsquo;une chaîne de caractères en plusieurs parties s&amp;rsquo;effectue grâce à la méthode &lt;strong&gt;split()&lt;/strong&gt;. Mais parfois cette dernière ne suffit pas : le découpage d&amp;rsquo;un entier par bloc de 3 caractères par exemple.&lt;/p&gt;
+
+&lt;p&gt;Dans ce cas il faudra en effet partir de la fin de l&amp;rsquo;entier : &lt;em&gt;2000000&lt;/em&gt; deviendra &lt;em&gt;2 000 000&lt;/em&gt;, &lt;em&gt;1234&lt;/em&gt; deviendra &lt;em&gt;1 234&lt;/em&gt;, etc.&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Création d&#39;API Avec Scrapy et Django</title>
+      <link>/posts/creation-dapi-avec-scrapy-et-django/</link>
+      <pubDate>Thu, 27 Aug 2015 18:05:34 +0200</pubDate>
+      
+      <guid>/posts/creation-dapi-avec-scrapy-et-django/</guid>
+      <description>&lt;p&gt;La majorité des API se font désormais au format REST. Sous Django, de telles API peuvent facilement se créer grâce au toolkit &lt;strong&gt;Django REST framework&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;Nous allons voir dans cet article comment créer une API REST sous Django. Pour que l&amp;rsquo;exemple soit ludique, nous créerons une API fournissant la liste complète des bières belge ! Pour cela nous utiliserons Scrapy afin de parser la page Wikipédia correspondante, puis nous utiliserons les modèles Django pour insérer les données en base.&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Sérialiser une instance de classe en JSON sous Python</title>
+      <link>/posts/serialiser-une-instance-de-classe-en-json-sous-python/</link>
+      <pubDate>Wed, 19 Aug 2015 00:30:35 +0200</pubDate>
+      
+      <guid>/posts/serialiser-une-instance-de-classe-en-json-sous-python/</guid>
+      <description>&lt;p&gt;Je me suis récemment confronté pour un projet perso à devoir sérialiser une instance de classe en JSON. J&amp;rsquo;aurais très bien pu utiliser un autre type de sérialisation, comme Pickle, mais je suis habitué au JSON et je préfère rester sur ce format pour l&amp;rsquo;ensemble de mes projets.&lt;/p&gt;
+
+&lt;p&gt;Pour la serialisation nous devons passer par la méthode &lt;strong&gt;JSON.dumps()&lt;/strong&gt;. A priori rien de bien compliqué pour des types basiques (list, dict, str, bool&amp;hellip;), mais les instances de classe ne sont pas serialisables.&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Modifier le header par défaut dans docutils</title>
+      <link>/posts/modifier-le-header-par-defaut-dans-docutils/</link>
+      <pubDate>Wed, 05 Aug 2015 00:11:35 +0200</pubDate>
+      
+      <guid>/posts/modifier-le-header-par-defaut-dans-docutils/</guid>
+      <description>&lt;p&gt;Je travaille actuellement sur un &lt;a href=&#34;https://github.com/ncrocfer/radric&#34;&gt;générateur statique de blog&lt;/a&gt; qui génère les pages HTML à partir de la syntaxe &lt;strong&gt;reStructuredText&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;J&amp;rsquo;utilise pour cela &lt;strong&gt;docutils&lt;/strong&gt;, et par défaut les headers (h1, h2, h3&amp;hellip;) sont générés par ordre croissant. Si il détecte un h1, alors un header de niveau moindre deviendra h2, ensuite h3, etc.&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Créer une commande personnalisée pour Git</title>
+      <link>/posts/creer-une-commande-personnalisee-pour-git/</link>
+      <pubDate>Mon, 03 Aug 2015 16:32:43 +0200</pubDate>
+      
+      <guid>/posts/creer-une-commande-personnalisee-pour-git/</guid>
+      <description>&lt;p&gt;Git est un formidable outil de versionning fournissant un nombre incroyable de fonctionnalités. Mais il peut arriver un cas particulier pour lequel aucune commande git n&amp;rsquo;apporte de solution : c&amp;rsquo;est pourquoi git propose à l&amp;rsquo;utilisateur de créer ses propres commandes personnalisées.&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Hello world</title>
+      <link>/posts/hello-world/</link>
+      <pubDate>Thu, 23 Jul 2015 20:09:44 +0200</pubDate>
+      
+      <guid>/posts/hello-world/</guid>
+      <description>&lt;p&gt;Ceux qui me connaissent savent que ce n&amp;rsquo;est pas la première fois que je créé un blog, et je me lance donc à nouveau dans la rédaction d&amp;rsquo;articles.&lt;/p&gt;
+
+&lt;p&gt;Mon premier site remonte à plusieurs années : il s&amp;rsquo;agissait d&amp;rsquo;un blog proposant des articles sur l&amp;rsquo;univers de l&amp;rsquo;Open source, notamment Linux. J&amp;rsquo;ai ensuite créé un blog perso, parlant de sécurité informatique, et enfin un autre sur le Cloud Computing.&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

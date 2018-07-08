@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Installer Python 3 5 1rc1 &middot; Nicolas Crocfer</title>
+
+    <meta name="description" content="">
+
+    <meta name="generator" content="Hugo 0.42.2" />
+    <meta name="twitter:card" content="summary">
+    
+    <meta name="twitter:title" content="Installer Python 3 5 1rc1 &middot; Nicolas Crocfer">
+    <meta name="twitter:description" content="">
+
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Installer Python 3 5 1rc1 &middot; Nicolas Crocfer">
+    <meta property="og:description" content="">
+
+    <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Oxygen:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/pure-min.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/grids-responsive-min.css">
+
+    <link rel="stylesheet" href="/css/all.min.css">
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <link rel="alternate" type="application/rss+xml" title="Nicolas Crocfer" href="/index.xml" />
+</head>
+<body>
+
+
+<div id="layout" class="pure-g">
+    <div class="sidebar pure-u-1 pure-u-md-1-4">
+    <div class="header">
+        <hgroup>
+            <h1 class="brand-title"><a href="">Nicolas Crocfer</a></h1>
+            <h2 class="brand-tagline"> Python Developer </h2>
+        </hgroup>
+
+        <nav class="nav">
+            <ul class="nav-list">
+                
+                <li class="nav-item">
+                    <a class="pure-button" href="https://twitter.com/ncrocfer">
+                        <i class="fa fa-twitter"></i> Twitter
+                    </a>
+                </li>
+                
+                
+                <li class="nav-item">
+                    <a class="pure-button" href="https://github.com/ncrocfer">
+                        <i class="fa fa-github-alt"></i> Github
+                    </a>
+                </li>
+                
+                
+                
+                <li class="nav-item">
+                    <a class="pure-button" href="/index.xml">
+                        <i class="fa fa-rss"></i> rss
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+    <div class="content pure-u-1 pure-u-md-3-4">
+        <div>
+            
+            <div class="posts">
+                <h1 class="content-subhead">27 Nov 2015, 00:10</h1>
+                <section class="post">
+                    <header class="post-header">
+
+                        <a href="/posts/installer-python-3-5-1rc1/" class="post-title">Installer Python 3 5 1rc1</a>
+
+                        <p class="post-meta">
+                            
+                            
+                        </p>
+                    </header>
+                    
+                    <div class="post-description">
+                        <p>La version 3.5.1rc1 de Python est sortie cette semaine, incluant <a href="https://docs.python.org/3.5/whatsnew/changelog.html#python-3-5-1-release-candidate-1">de nombreuses corrections</a>.</p>
+
+<p>Voici comment l&rsquo;installer si vous souhaitez la tester. Sur mon laptop j&rsquo;ai un répertoire dans lequel je place les sources des différentes versions de Python (<strong>~/dev/python/src</strong>), et un autre dans lequel je compile les binaires (<strong>~/dev/python/bin</strong>).</p>
+
+<p></p>
+
+<p>On commence par télécharger les sources :</p>
+
+<pre><code class="language-bash">ncrocfer@home:~$ cd ~/dev/python/src
+ncrocfer@home:~/dev/python/src$ wget https://www.python.org/ftp/python/3.5.1/Python-3.5.1rc1.tgz
+ncrocfer@home:~/dev/python/src$ tar xzvf Python-3.5.1rc1.tgz
+ncrocfer@home:~/dev/python/src$ cd Python-3.5.1rc1/
+</code></pre>
+
+<p>On compile ensuite les sources, en choisissant le répertoire de destination souhaité :</p>
+
+<pre><code class="language-bash">ncrocfer@home:~/dev/python/src/Python-3.5.1rc1$ ./configure --prefix=&quot;/home/ncrocfer/dev/python/bin/3.5.1rc1/&quot;
+ncrocfer@home:~/dev/python/src/Python-3.5.1rc1$ make
+ncrocfer@home:~/dev/python/src/Python-3.5.1rc1$ make install
+</code></pre>
+
+<p>Vous pouvez désormais tester Python 3.5.1rc1 :</p>
+
+<pre><code class="language-bash">ncrocfer@home:~$ cd ~/dev/python/bin/3.5.1rc1/bin/
+ncrocfer@home:~/dev/python/bin/3.5.1rc1/bin$ ./python3
+Python 3.5.1rc1 (default, Nov 27 2015, 00:32:21)
+[GCC 4.8.4] on linux
+Type &quot;help&quot;, &quot;copyright&quot;, &quot;credits&quot; or &quot;license&quot; for more information.
+&gt;&gt;&gt;
+</code></pre>
+
+<p>A noter que cette méthode fonctionne évidemment pour les autres versions de Python. Utile si vous devez tester votre code sur une version spécifique de Python non packagée dans votre système de paquet.</p>
+                    </div>
+                    
+                </section>
+            </div>
+            <div class="footer">
+    <div class="pure-menu pure-menu-horizontal pure-menu-open">
+        <ul>
+            <li>Powered by <a class="hugo" href="https://gohugo.io/" target="_blank">hugo</a></li>
+        </ul>
+    </div>
+</div>
+<script src="/js/all.min.js"></script>
+
+        </div>
+    </div>
+</div>
+
+
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-65778407-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+
+</body>
+</html>
