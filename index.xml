@@ -6,10 +6,21 @@
     <description>Recent content on Nicolas Crocfer</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>fr-FR</language>
-    <lastBuildDate>Mon, 07 Aug 2017 01:03:59 +0200</lastBuildDate>
+    <lastBuildDate>Fri, 02 Nov 2018 09:25:49 +0100</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Gestion de Tâches avec Apache Airflow</title>
+      <link>/posts/gestion-de-taches-avec-apache-airflow/</link>
+      <pubDate>Fri, 02 Nov 2018 09:25:49 +0100</pubDate>
+      
+      <guid>/posts/gestion-de-taches-avec-apache-airflow/</guid>
+      <description>&lt;p&gt;Apache Airflow est un outil open source d’orchestration de workflows : si vous êtes habitués à gérer des tâches cron au quotidien, alors cet article devrez vous plaire.&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;</description>
+    </item>
     
     <item>
       <title>Gérer vos CVE avec Saucs</title>

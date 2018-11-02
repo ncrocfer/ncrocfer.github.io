@@ -71,6 +71,80 @@
             
             <div class="posts">
                 
+                <h1 class="content-subhead">19 Aug 2015, 00:30</h1>
+                <section class="post">
+                    <header class="post-header">
+
+                        <a href="/posts/serialiser-une-instance-de-classe-en-json-sous-python/" class="post-title">Sérialiser une instance de classe en JSON sous Python</a>
+
+                        <p class="post-meta">
+                            
+                            
+                        </p>
+                    </header>
+
+                    <div class="post-description">
+                        <p>Je me suis récemment confronté pour un projet perso à devoir sérialiser une instance de classe en JSON. J&rsquo;aurais très bien pu utiliser un autre type de sérialisation, comme Pickle, mais je suis habitué au JSON et je préfère rester sur ce format pour l&rsquo;ensemble de mes projets.</p>
+
+<p>Pour la serialisation nous devons passer par la méthode <strong>JSON.dumps()</strong>. A priori rien de bien compliqué pour des types basiques (list, dict, str, bool&hellip;), mais les instances de classe ne sont pas serialisables.</p>
+
+<p></p>
+
+<p>Prenons une classe toute simple :</p>
+
+<pre><code class="language-python"># -*- coding: utf-8 -*- 
+
+class MyClass(object):
+    def __init__(self):
+        self.var1 = &quot;foo&quot;
+        self.var2 = &quot;bar&quot;
+</code></pre>
+
+<p>Si vous essayez de sérialiser une instance de celle-ci, une exception sera levée :</p>
+
+<pre><code class="language-python">&gt;&gt;&gt; from myclass import MyClass
+&gt;&gt;&gt; import json
+&gt;&gt;&gt; obj = MyClass()
+&gt;&gt;&gt; json.dumps(obj)
+Traceback (most recent call last):
+  File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt;
+  File &quot;/usr/lib/python3.4/json/__init__.py&quot;, line 230, in dumps
+    return _default_encoder.encode(obj)
+  File &quot;/usr/lib/python3.4/json/encoder.py&quot;, line 192, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+  File &quot;/usr/lib/python3.4/json/encoder.py&quot;, line 250, in iterencode
+    return _iterencode(o, 0)
+  File &quot;/usr/lib/python3.4/json/encoder.py&quot;, line 173, in default
+    raise TypeError(repr(o) + &quot; is not JSON serializable&quot;)
+TypeError: &lt;myclass.MyClass object at 0x7f37074c8e10&gt; is not JSON serializable
+</code></pre>
+
+<p>Pour pallier à ce problème, la <a href="https://docs.python.org/3/library/json.html">documentation</a> suggère d&rsquo;utiliser une sous-classe de <strong>json.JSONEncoder</strong> et de retourner le résultat attendu dans la méthode <strong>default()</strong>. Ce qui donne dans notre cas :</p>
+
+<pre><code class="language-python">class MyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, MyClass):
+            return vars(obj)
+        else:
+            return json.JSONEncoder.default(self, obj)
+</code></pre>
+
+<p>On spécifie ensuite cet <em>encoder</em> dans l&rsquo;argument nommé <strong>cls</strong> :</p>
+
+<pre><code class="language-python">&gt;&gt;&gt; json.dumps(obj, cls=MyEncoder)
+'{&quot;var1&quot;: &quot;foo&quot;, &quot;var2&quot;: &quot;bar&quot;}'
+</code></pre>
+
+<p>Ca fonctionne, mais il existe une façon bien plus simple d&rsquo;arriver au même résultat sans devoir créer d&rsquo;<em>encoder</em> spécifique. Il suffit simplement d&rsquo;utiliser l&rsquo;attribut <strong>__dict__</strong> de l&rsquo;instance. Celui-ci retourne l&rsquo;ensemble des attributs internes d&rsquo;un objet sous forme de dictionnaire, et c&rsquo;est exactement ce que nous souhaitons :</p>
+
+<pre><code class="language-python">&gt;&gt;&gt; json.dumps(obj.__dict__)
+'{&quot;var1&quot;: &quot;foo&quot;, &quot;var2&quot;: &quot;bar&quot;}'
+</code></pre>
+
+<p>C&rsquo;est beau Python&hellip;</p>
+                    </div>
+                </section>
+                
                 <h1 class="content-subhead">05 Aug 2015, 00:11</h1>
                 <section class="post">
                     <header class="post-header">

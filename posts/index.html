@@ -71,6 +71,390 @@
             
             <div class="posts">
                 
+                <h1 class="content-subhead">02 Nov 2018, 09:25</h1>
+                <section class="post">
+                    <header class="post-header">
+
+                        <a href="/posts/gestion-de-taches-avec-apache-airflow/" class="post-title">Gestion de Tâches avec Apache Airflow</a>
+
+                        <p class="post-meta">
+                            
+                            
+                        </p>
+                    </header>
+
+                    <div class="post-description">
+                        <p>Apache Airflow est un outil open source d’orchestration de workflows : si vous êtes habitués à gérer des tâches cron au quotidien, alors cet article devrez vous plaire.</p>
+
+<p></p>
+
+<h1 id="airflow-vs-cron">Airflow vs. Cron</h1>
+
+<p>Pour l’histoire Airflow a été créé en 2014 par <a href="https://medium.com/@maximebeauchemin">Maxime Beauchemin </a> lorsqu’il travaillait chez Airbnb. En 2016 le projet a rejoint le programme d’incubation de la fondation Apache, c’est pourquoi nous parlons désormais d’Apache Airflow.</p>
+
+<img src="/images/airflow-logo.png" alt="" style="display: block; margin-left: auto; margin-right: auto; width: 50%;">
+
+<p>Alors qu’est-ce qui le différencie des tâches cron ? Après tout nous y sommes habitués, et il faut avouer qu’il est très simple de lancer de manière régulière un script, une commande ou un programme.</p>
+
+<p>Mais il y a fort à parier que votre tâche rencontrera tôt ou tard un problème :</p>
+
+<ul>
+<li>un timeout sur une requête SQL,</li>
+<li>un changement de clé dans le Json d’une API que vous interrogez,</li>
+<li>un site web injoignable au moment d’un GET,</li>
+<li>etc.</li>
+</ul>
+
+<p>A la limite si notre script est très simple nous pouvons gérer ces cas dans le code lui-même, il ne faudra en oublier aucun, mais ça reste faisable.</p>
+
+<p>En revanche les choses se compliquent lorsque nous devons gérer plusieurs tâches dépendantes les unes des autres. Imaginez qu’une tâche B ait besoin de données créées par une tâche A, elle doit donc s’exécuter après. En cron nous laisserions un temps raisonnable entre le lancement des 2 tâches pour que celles-ci s’exécutent correctement. Sauf que ce laps de temps est fixé, si la tâche A plante pour une raison ou une autre, la tâche B s’exécutera tout de même avec potentiellement des données corrompues.</p>
+
+<p>C’est là qu’Airflow entre en jeu : cet outil va justement nous permettre de gérer les dépendances entre nos tâches, on parle alors de <strong>workflow</strong> ou encore de <strong>pipeline</strong>. Nous déclarons nos tâches à Airflow, et ce dernier s’occupe de les lancer dans le bon ordre, de gérer les exceptions s’il y en a, et de relancer les tâches le cas échéant.</p>
+
+<p>En bonus Airflow est livré avec une Webui extrêmement pratique qui va nous permettre de suivre l’avancement de nos tâches et de les monitorer :</p>
+
+<img src="/images/airflow.gif" alt="" style="display: block; margin-left: auto; margin-right: auto; width: 75%;">
+
+<h1 id="les-concepts">Les Concepts</h1>
+
+<p>L&rsquo;utilisation d&rsquo;Airflow se fait via du code Python. Mais avant cela voici quelques concepts qu&rsquo;il vous faudra connaître afin de mettre les mains dans le cambouis.</p>
+
+<h2 id="dag-tasks">DAG &amp; Tasks</h2>
+
+<p>Airflow est principalement basé sur le concept de <strong>DAG</strong>, pour <a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">Directed Acyclic Graph</a>. Un DAG n’est ni plus ni moins qu’un graphe orienté sans retour possible. Nos tâches s’exécuteront donc dans un ordre précis, en parallèle ou à la suite, et ce sans risque de boucle infinie.</p>
+
+<p><img https://en.wikipedia.org/wiki/Directed_acyclic_graph /></p>
+
+<p>Un DAG est constitué de <strong>tasks</strong> liées les unes aux autres. Vous avez déjà certainement entendu parlé de l’acronyme ETL pour Extract Transform Load, qui consiste à récupérer des données d’une source, à les transformer dans un nouveau format, puis à les renvoyer dans une seconde source adaptée à ce nouveau format.</p>
+
+<p>Et bien Airflow s’adapte parfaitement bien à ce modèle. Voici un exemple de DAG contenant 3 tâches :</p>
+
+<img src="/images/airflow-etl.png" alt="" style="display: block; margin-left: auto; margin-right: auto; ">
+
+<p>Un DAG est lancé de manière régulière ou via un trigger. Un DAG lancé ou en cours d’exécution est appelé une <strong>DagInstance</strong>, ses tâches étant donc des <strong>TaskInstances</strong>.</p>
+
+<h2 id="operators">Operators</h2>
+
+<p>Les tâches d’un DAG ne sont pas toutes forcément du même type : nous aurons parfois besoin de lancer un script Bash, d’autres fois notre logique métier sera contenue dans une fonction Python, et parfois nous aurons simplement besoin d’envoyer un mail.</p>
+
+<p>La création d’une tâche passe par des <strong>operators</strong>. A chaque besoin son operator :</p>
+
+<ul>
+<li><code>BashOperator</code> : exécute une commande bash,</li>
+<li><code>PythonOperator</code> : exécute une fonction Python,</li>
+<li><code>EmailOperator</code> : envoie un mail,</li>
+<li><code>DockerOperator</code> : exécute une commande dans un container Docker,</li>
+<li><code>HttpOperator</code> : effectue une requête sur un endpoint HTTP,</li>
+<li>etc…</li>
+</ul>
+
+<p>La liste des operators intégrés à Airflow est <a href="https://github.com/apache/incubator-airflow/tree/master/airflow/operators">longue</a>, et vous pouvez bien sûr créer les vôtres si besoin.</p>
+
+<p>Pour l&rsquo;aspect technique, un operator est tout simplement une classe Python héritant de <code>BaseOperator</code>. Lorsque la tâche est appelée, la fonction <code>execute()</code> de l’operator est exécutée. Vous l’aurez compris, un operator instancié devient donc une task.</p>
+
+<h2 id="executors">Executors</h2>
+
+<p>Lorsqu’une tâche est appelée, elle va s’exécuter <em>quelque part</em> : ce <em>quelque part</em> est géré par Airflow via les <strong>executors</strong>.</p>
+
+<p>Par défaut Airflow utilise le <strong>SequentialExecutor</strong> : les tâches sont lancées les unes après les autres sur le serveur local (là où Airflow lui-même est lancé) sans aucun parallélisme. Cet executor est pratique lorsqu’on développe, mais les limites sont vites atteintes lorsque l’on passe à l’échelle.</p>
+
+<p>On pourra dans ce cas utiliser le <strong>LocalExecutor</strong>, plus performant que le précédent car basé sur un modèle prefork : plusieurs tâches pourront donc être lancées en parallèle jusqu’à ce que les ressources de la machine locale soient utilisées. Ici le scaling est vertical (plus de ressources signifie plus de tasks lancées en même temps).</p>
+
+<p>Et le meilleur pour la fin : le <strong>CeleryExecutor</strong>. C’est via cet executor que le scaling des tâches pourra réellement se faire puisqu’Airflow ira déléguer à Celery la distribution des tâches sur un pool de workers. Le scaling sera donc horizontal : plus nous aurons de workers plus nous pourrons lancer de tâches en parallèle. Notons tout de même que Celery nécessite l’utilisation d’un broker pour l’échange des messages, ainsi qu’une synchronisation du code sur l’ensemble des workers (facilement réalisable avec l’utilisation de Redis &amp; Kubernetes par exemple).</p>
+
+<h1 id="création-du-dag">Création du DAG</h1>
+
+<p>Bon assez parlé, je me doute que vous avez envie de tester Airflow de ce pas. L’installation est commune à tous les packages Python :</p>
+
+<pre><code class="language-bash">$ pip install apache-airflow
+</code></pre>
+
+<p>Airflow va chercher les Dags dans le répertoire <strong>~/airflow</strong>, mais nous pouvons changer ce comportement via la variable d’environnement <code>AIRFLOW_HOME</code> :</p>
+
+<pre><code class="language-bash">$ export AIRFLOW_HOME=~/Dev/python/demo_airflow
+</code></pre>
+
+<p>Une base de données est nécessaire pour faire fonctionner Airflow, nous la créons avec la CLI fournie lors de l’installation :</p>
+
+<pre><code class="language-bash">$ airflow initdb
+$ ls
+airflow.cfg   airflow.db    logs          unittests.cfg
+</code></pre>
+
+<p>Plusieurs fichiers ont été créés, les plus importans étant les deux suivants :</p>
+
+<ul>
+<li><code>airflow.db</code> : il s&rsquo;agit de la base de données utilisées par Airflow pour gérer nos Dags et leurs tasks. Ce fichier est au format SQLite3, on pourra le garder tout au long de nos développements mais je vous conseille fortement de passer sur un autre type (PostgreSQL ou MySQL par exemple) lors du passage en production.</li>
+<li><code>airflow.cfg</code> : ce fichier contient la configuration d&rsquo;Airflow, c&rsquo;est ici par exemple que vous configurerez l&rsquo;accès à la base de données, l&rsquo;executor à utiliser, les paramètres de parallélisation, et j&rsquo;en passe.</li>
+</ul>
+
+<p>Créons maintenant notre DAG qui contiendra plus tard nos différentes tasks. La première étape consiste à instancier un object DAG et à lui fournir certains paramètres :</p>
+
+<pre><code class="language-python">from datetime import datetime, timedelta
+
+from airflow import DAG
+
+default_args = {
+    'owner': 'ncrocfer',
+    'start_date': datetime(2018, 10, 31),
+    'retries': 5,
+    'retry_delay': timedelta(minutes=5)
+}
+
+dag = DAG('demo', default_args=default_args, schedule_interval='0 * * * *')
+</code></pre>
+
+<p>Les paramètres que nous déclarons dans la variable <code>default_args</code> sont assez parlants :</p>
+
+<ul>
+<li><code>owner</code> : l&rsquo;utilisateur du DAG.</li>
+<li><code>start_date</code> : Airflow lancera le DAG à partir de cette date.</li>
+<li><code>retries</code> : le nombre d&rsquo;essai qui sera effectué si une tâche tombe en erreur. Une fois cette valeur atteinte, le DAG tombera en erreur et sera stoppé.</li>
+<li><code>retry_delay</code> : le temps d&rsquo;attente entre deux essais.</li>
+</ul>
+
+<p>Vous avez dû remarquer un pattern qui vous parle si vous utilisez les tâches cron : <code>0 * * * *</code>. C&rsquo;est en effet ici que l&rsquo;on définit le cycle d&rsquo;exécution du DAG, dans notre cas notre DAG <code>demo</code> sera exécuté <strong>chaque heure</strong>. La syntaxe est la même qu&rsquo;avec les crontab, et certains raccourcis sont <a href="https://airflow.apache.org/scheduler.html#dag-runs">disponibles</a>.</p>
+
+<p>Vous devriez déjà voir votre DAG apparaître dans la liste :</p>
+
+<pre><code class="language-bash">$ airflow list_dags
+[2018-11-01 16:35:35,220] {__init__.py:51} INFO - Using executor SequentialExecutor
+[2018-11-01 16:35:35,564] {models.py:258} INFO - Filling up the DagBag from /Users/ncrocfer/Dev/python/demo_airflow/dags
+
+
+-------------------------------------------------------------------
+DAGS
+-------------------------------------------------------------------
+demo
+</code></pre>
+
+<p><strong>Note :</strong> il se peut que d&rsquo;autres DAG apparaissent dans votre liste. C&rsquo;est en fait Airflow qui inclut des exemples de DAG. Vous pouvez les supprimer en passant à <code>False</code> la variable <code>load_examples</code> du fichier <code>airflow.cfg</code>, puis en remettant à zéro la base de données avec la commande <code>airflow resetdb</code>.</p>
+
+<h1 id="création-des-tâches">Création des Tâches</h1>
+
+<p>Nous devons maintenant créer nos tâches. Je vais prendre comme exemple le site <a href="https://www.saucs.com">Saucs.com</a>, pour lequel je gère la partie développement. Pour rappel ce site permet aux utilisateurs de s&rsquo;abonner à des produits et de recevoir un rapport par mail dès qu&rsquo;une vulnérabilité apparaît sur le site du NVD.</p>
+
+<p>L&rsquo;ordre des tâches est donc le suivant :</p>
+
+<ol>
+<li><code>CheckUpdates</code> : On vérifie sur le site du NVD si une mise à jour des CVE a eu lieu,</li>
+<li><code>DownloadXml</code> : On télécharge les nouvelles CVE,</li>
+<li><code>ParseXml</code> : On parse les nouvelles CVE et on met à jour notre base de données,</li>
+<li><code>SendMails</code> : On envoie un mail aux utilisateurs abonnés aux produits impactés.</li>
+</ol>
+
+<p>Comme expliqué plus haut, la création de tâches se fait via l’utilisation des operators. Nous allons pour cet exemple utiliser plusieurs <code>PythonOperator</code> auxquels nous passons des fonctions Python :</p>
+
+<p>Voici le code final de notre DAG :</p>
+
+<pre><code class="language-python">import gzip
+import logging
+import re
+from datetime import datetime, timedelta
+from io import BytesIO
+from xml.etree import ElementTree as ET
+
+import requests
+from airflow import DAG
+from airflow.operators.python_operator import BranchPythonOperator, PythonOperator
+
+
+default_args = {
+    'owner': 'ncrocfer',
+    'start_date': datetime(2018, 10, 31),
+    'retries': 5,
+    'retry_delay': timedelta(minutes=5)
+}
+
+
+logger = logging.getLogger(__name__)
+
+
+NVD_MODIFIED_META_URL = 'https://static.nvd.nist.gov/feeds/xml/cve/2.0/nvdcve-2.0-Modified.meta'
+NVD_MODIFIED_URL = 'https://static.nvd.nist.gov/feeds/xml/cve/nvdcve-2.0-Modified.xml.gz'
+LAST_NVD_HASH = '/tmp/lastnvd'
+
+
+def check_updates():
+    logger.info(&quot;Downloading {url}...&quot;.format(url=NVD_MODIFIED_META_URL))
+
+    resp = requests.get(NVD_MODIFIED_META_URL)
+    buf = BytesIO(resp.content).read().decode('utf-8')
+
+    nvd_sha256 = buf.split('sha256')[1][1:-2]
+    logger.info(&quot;New NVD hash is : {hash}&quot;.format(hash=nvd_sha256))
+
+    try:
+        with open(LAST_NVD_HASH) as f:
+            last_nvd256 = f.read()
+    except FileNotFoundError:
+        last_nvd256 = None
+    logger.info(&quot;Local hash is : {hash}&quot;.format(hash=last_nvd256))
+
+    if nvd_sha256 != last_nvd256:
+        logger.info(&quot;Hashes differ, Saucs database needs to be updated...&quot;)
+        return {'updated': True, 'hash': nvd_sha256}
+    else:
+        logger.info(&quot;Hashes are the same, nothing to do.&quot;)
+        return {'updated': False}
+
+
+def download_xml(ds, **context):
+    update = context['task_instance'].xcom_pull(task_ids='CheckUpdates')
+    if not update['updated']:
+        return
+
+    logger.info(&quot;Downloading {url}...&quot;.format(url=NVD_MODIFIED_URL))
+
+    resp = requests.get(NVD_MODIFIED_URL)
+    buf = BytesIO(resp.content)
+    data = gzip.GzipFile(fileobj=buf)
+
+    xml_string = data.read().decode('utf-8')
+    xml_string = re.sub(' xmlns=&quot;[^&quot;]+&quot;', '', xml_string)
+
+    with open('/tmp/{0}.xml'.format(ds), 'w') as f:
+        f.write(xml_string)
+
+
+def parse_xml(ds, **context):
+    update = context['task_instance'].xcom_pull(task_ids='CheckUpdates')
+    if not update['updated']:
+        return
+
+    parser = ET.XMLParser(encoding=&quot;utf-8&quot;)
+    tree = ET.parse('/tmp/{0}.xml'.format(ds), parser=parser)
+    root = tree.getroot()
+
+    for child in root:
+        logger.info(&quot;Parsing {cve}...&quot;.format(cve=child.attrib.get('id')))
+
+        # 1. Process the CVE (new CVE, CPE updated, references updated, CVSS updated...)
+        # 2. Create an alert for all impacted users
+
+
+def send_mails(ds, **context):
+    update = context['task_instance'].xcom_pull(task_ids='CheckUpdates')
+    if not update['updated']:
+        return
+
+    logger.info('Sending mail for users with an alert')
+    &quot;&quot;&quot;users = get_users_with_alerts()
+
+    for user in users:
+        send_user_mail()
+        user.new_alerts = False&quot;&quot;&quot;
+
+    # We're done, we can set the new NVD hash in local
+    with open(LAST_NVD_HASH, 'w') as f:
+        f.write(update['hash'])
+
+
+dag = DAG('demo', default_args=default_args, schedule_interval='0 * * * *')
+
+with dag:
+    check_updates_op = PythonOperator(
+        task_id='CheckUpdates',
+        python_callable=check_updates
+    )
+
+    download_xml_op = PythonOperator(
+        task_id='DownloadXml',
+        provide_context=True,
+        python_callable=download_xml
+    )
+
+    parse_xml_op = PythonOperator(
+        task_id='ParseXml',
+        provide_context=True,
+        python_callable=parse_xml
+    )
+
+    send_mails_op = PythonOperator(
+        task_id='SendMails',
+        provide_context=True,
+        python_callable=send_mails
+    )
+
+
+# Order the tasks
+check_updates_op &gt;&gt; download_xml_op &gt;&gt; parse_xml_op &gt;&gt; send_mails_op
+
+&quot;&quot;&quot;
+# Can be written :
+check_updates_op.set_downstream(download_xml_op)
+download_xml_op.set_downstream(parse_xml_op)
+parse_xml_op.set_downstream(send_mails_op)
+&quot;&quot;&quot;
+</code></pre>
+
+<p>La logique des 4 fonctions n&rsquo;est pas compliquée et ne concerne pas directement Airflow, je ne m&rsquo;étalerai pas dessus. En revanche certaines parties du code sont nouvelles :</p>
+
+<ol>
+<li>On constate l&rsquo;ouverture d&rsquo;un context manager (<code>with dag</code>) juste après la déclaration du DAG : cela signifie que tous les opérateurs déclarés à l&rsquo;intérieur de celui-ci seront liés à notre DAG.</li>
+<li>Certains opérateurs possèdent le paramètre <code>provide_context</code> : dans ce cas les fonctions à lancer (renseignées via le paramètre <code>python_callable</code>) recevront les paramètres <code>ds</code> et <code>context</code>. Le premier est un string représentant la date d&rsquo;éxecution de la tâche, le second est un dictionnaire contenant des informations relatives à l&rsquo;instance de tâche.</li>
+<li>Nous utilisons les <a href="https://airflow.apache.org/concepts.html#xcoms">xcom</a> : il s&rsquo;agit d&rsquo;une fonctionnalité proposée par Airflow afin de communiquer des informations d&rsquo;une tâche à une autre.</li>
+<li>la dernière ligne peut paraître obscure : il s&rsquo;agit en fait tout simplement de la façon dont nous déclarons l&rsquo;ordre de lancement de nos tâches. Nous utilisons ici les opérateurs bits à bits (<a href="https://wiki.python.org/moin/BitwiseOperators">Bitwise operators</a>) car je trouve que la forme est assez parlante, mais Airflow propose également les méthodes <code>set_upstream()</code> et <code>set_downstream()</code>.</li>
+</ol>
+
+<p>Nous pouvons tester que tout fonctionne correctement grâce à la commande <code>list_tasks</code> :</p>
+
+<pre><code class="language-bash">$ airflow list_tasks demo --tree
+2018-11-01 18:45:03,572] {__init__.py:51} INFO - Using executor SequentialExecutor
+[2018-11-01 18:45:03,785] {models.py:258} INFO - Filling up the DagBag from /Users/ncrocfer/Dev/python/demo_airflow/dags
+&lt;Task(PythonOperator): SendMails&gt;
+    &lt;Task(PythonOperator): ParseXml&gt;
+        &lt;Task(PythonOperator): DownloadXml&gt;
+            &lt;Task(PythonOperator): CheckUpdates&gt;
+</code></pre>
+
+<h1 id="exécution-du-dag">Exécution du DAG</h1>
+
+<p>Tout semble en ordre, nous pouvons lancer le serveur web :</p>
+
+<pre><code class="language-bash">$ airflow webserver
+</code></pre>
+
+<p>Par défaut l&rsquo;interface est disponible en localhost sur le port 8080. Nous pouvons y voir notre DAG :</p>
+
+<img src="/images/airflow-webui.png" alt="" style="display: block; margin-left: auto; margin-right: auto; width: 100%;">
+
+<p>L&rsquo;exécution du DAG nécessite deux actions :</p>
+
+<ul>
+<li>tout d&rsquo;abord il faut l&rsquo;activer (le bouton On/Off),</li>
+<li>puis vous devez lancer le <strong>scheduler</strong> d&rsquo;Airflow.</li>
+</ul>
+
+<p>C&rsquo;est ce dernier qui va gérer pour nous l&rsquo;ordonnancement des tâches, leur retry si besoin, et c&rsquo;est également lui qui vérifiera en permanence si un nouveau DagRun ne doit pas être lancé :</p>
+
+<pre><code class="language-bash">$ airflow scheduler
+</code></pre>
+
+<p>Cliquez maintenant sur le DAG <strong>demo</strong>, puis sur l&rsquo;onglet <strong>Graph View</strong>. Le DAG a bien été lancé :</p>
+
+<img src="/images/airflow-launched.png" alt="" style="display: block; margin-left: auto; margin-right: auto; width: 100%;">
+
+<p>Airflow s&rsquo;occupe désormais de tout et va lancer le DAG chaque heure, et ce depuis le <code>start_date</code> (le scheduler effectue ce qu&rsquo;on appelle le <strong>backfill</strong>, ce comportement étant modifiable grâce à la configuration <code>catchup_by_default</code> ou au paramètre <code>catchup</code> du DAG lui-même) :</p>
+
+<img src="/images/airflow-backfill.png" alt="" style="display: block; margin-left: auto; margin-right: auto; width: 100%;">
+
+<p>Pour finir il est important de noter que le monitoring de nos tâches est très simple puisqu&rsquo;Airflow fournit une interface pour visualiser les logs (et donc potentiellement les exceptions lancées).</p>
+
+<p>Vous pouvez voir les logs d&rsquo;une tâche en cliquant sur la tâche puis sur le bouton <strong>View Log</strong> :</p>
+
+<img src="/images/airflow-logs.png" alt="" style="display: block; margin-left: auto; margin-right: auto; width: 100%;">
+
+<h1 id="conclusion">Conclusion</h1>
+
+<p>Je m&rsquo;arrête ici pour cette présentation d&rsquo;Apache Airflow. Il y a beaucoup de chose à dire dessus, nous n&rsquo;avons fait qu&rsquo;effleurer le sujet mais j&rsquo;espère néanmoins vous avoir donner envie de le tester.</p>
+
+<p>L&rsquo;exemple que j&rsquo;ai donné était très simple : j&rsquo;ai volontairement épuré le Dag de Saucs afin de vous montrer un exemple concret d&rsquo;usage d&rsquo;Airflow sans polluer le code par de la logique externe au tool. De même vous aurez peut-être remarqué que chaque tâche est exécutée même si aucune mise à jour n&rsquo;a été effectuée par le NVD. La solution dans ce cas aurait été d&rsquo;utiliser l&rsquo;opérateur <code>BranchPythonOperator</code> afin de renvoyer vers la tâche adéquate, mais cela aurait compliqué cet article et ce n&rsquo;était pas l&rsquo;objectif souhaité.</p>
+
+<p>Airflow est un outil que j&rsquo;utilise désormais au quotidien, et je ne peux que vous conseiller de l&rsquo;essayer vous-aussi. Je tenterai dans les prochains articles de couvrir d&rsquo;autres fonctionnalités d&rsquo;Airflow, tels que les BranchOperator, le CeleryExecutor ou encore la création dynamique de Dags.</p>
+                    </div>
+                </section>
+                
                 <h1 class="content-subhead">07 Aug 2017, 01:03</h1>
                 <section class="post">
                     <header class="post-header">
@@ -862,80 +1246,6 @@ Quit the server with CONTROL-C.
 
 <p><img src="/images/scrapy-django-rest-2.png" alt="" class="pure-img" >
 <img src="/images/scrapy-django-rest-3.png" alt="" class="pure-img" ></p>
-                    </div>
-                </section>
-                
-                <h1 class="content-subhead">19 Aug 2015, 00:30</h1>
-                <section class="post">
-                    <header class="post-header">
-
-                        <a href="/posts/serialiser-une-instance-de-classe-en-json-sous-python/" class="post-title">Sérialiser une instance de classe en JSON sous Python</a>
-
-                        <p class="post-meta">
-                            
-                            
-                        </p>
-                    </header>
-
-                    <div class="post-description">
-                        <p>Je me suis récemment confronté pour un projet perso à devoir sérialiser une instance de classe en JSON. J&rsquo;aurais très bien pu utiliser un autre type de sérialisation, comme Pickle, mais je suis habitué au JSON et je préfère rester sur ce format pour l&rsquo;ensemble de mes projets.</p>
-
-<p>Pour la serialisation nous devons passer par la méthode <strong>JSON.dumps()</strong>. A priori rien de bien compliqué pour des types basiques (list, dict, str, bool&hellip;), mais les instances de classe ne sont pas serialisables.</p>
-
-<p></p>
-
-<p>Prenons une classe toute simple :</p>
-
-<pre><code class="language-python"># -*- coding: utf-8 -*- 
-
-class MyClass(object):
-    def __init__(self):
-        self.var1 = &quot;foo&quot;
-        self.var2 = &quot;bar&quot;
-</code></pre>
-
-<p>Si vous essayez de sérialiser une instance de celle-ci, une exception sera levée :</p>
-
-<pre><code class="language-python">&gt;&gt;&gt; from myclass import MyClass
-&gt;&gt;&gt; import json
-&gt;&gt;&gt; obj = MyClass()
-&gt;&gt;&gt; json.dumps(obj)
-Traceback (most recent call last):
-  File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt;
-  File &quot;/usr/lib/python3.4/json/__init__.py&quot;, line 230, in dumps
-    return _default_encoder.encode(obj)
-  File &quot;/usr/lib/python3.4/json/encoder.py&quot;, line 192, in encode
-    chunks = self.iterencode(o, _one_shot=True)
-  File &quot;/usr/lib/python3.4/json/encoder.py&quot;, line 250, in iterencode
-    return _iterencode(o, 0)
-  File &quot;/usr/lib/python3.4/json/encoder.py&quot;, line 173, in default
-    raise TypeError(repr(o) + &quot; is not JSON serializable&quot;)
-TypeError: &lt;myclass.MyClass object at 0x7f37074c8e10&gt; is not JSON serializable
-</code></pre>
-
-<p>Pour pallier à ce problème, la <a href="https://docs.python.org/3/library/json.html">documentation</a> suggère d&rsquo;utiliser une sous-classe de <strong>json.JSONEncoder</strong> et de retourner le résultat attendu dans la méthode <strong>default()</strong>. Ce qui donne dans notre cas :</p>
-
-<pre><code class="language-python">class MyEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, MyClass):
-            return vars(obj)
-        else:
-            return json.JSONEncoder.default(self, obj)
-</code></pre>
-
-<p>On spécifie ensuite cet <em>encoder</em> dans l&rsquo;argument nommé <strong>cls</strong> :</p>
-
-<pre><code class="language-python">&gt;&gt;&gt; json.dumps(obj, cls=MyEncoder)
-'{&quot;var1&quot;: &quot;foo&quot;, &quot;var2&quot;: &quot;bar&quot;}'
-</code></pre>
-
-<p>Ca fonctionne, mais il existe une façon bien plus simple d&rsquo;arriver au même résultat sans devoir créer d&rsquo;<em>encoder</em> spécifique. Il suffit simplement d&rsquo;utiliser l&rsquo;attribut <strong>__dict__</strong> de l&rsquo;instance. Celui-ci retourne l&rsquo;ensemble des attributs internes d&rsquo;un objet sous forme de dictionnaire, et c&rsquo;est exactement ce que nous souhaitons :</p>
-
-<pre><code class="language-python">&gt;&gt;&gt; json.dumps(obj.__dict__)
-'{&quot;var1&quot;: &quot;foo&quot;, &quot;var2&quot;: &quot;bar&quot;}'
-</code></pre>
-
-<p>C&rsquo;est beau Python&hellip;</p>
                     </div>
                 </section>
                 
