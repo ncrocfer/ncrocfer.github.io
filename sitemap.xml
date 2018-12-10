@@ -3,6 +3,11 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>/posts/introduction-a-la-base-de-donnees-orientee-graphe-neo4j/</loc>
+    <lastmod>2018-12-10T10:00:00+01:00</lastmod>
+  </url>
+  
+  <url>
     <loc>/posts/gestion-de-taches-avec-apache-airflow/</loc>
     <lastmod>2018-11-02T09:25:49+01:00</lastmod>
   </url>
@@ -79,13 +84,13 @@
   
   <url>
     <loc>/</loc>
-    <lastmod>2018-11-02T09:25:49+01:00</lastmod>
+    <lastmod>2018-12-10T10:00:00+01:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>/posts/</loc>
-    <lastmod>2018-11-02T09:25:49+01:00</lastmod>
+    <lastmod>2018-12-10T10:00:00+01:00</lastmod>
     <priority>0</priority>
   </url>
   

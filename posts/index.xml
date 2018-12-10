@@ -6,10 +6,32 @@
     <description>Recent content in Posts on Nicolas Crocfer</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>fr-FR</language>
-    <lastBuildDate>Fri, 02 Nov 2018 09:25:49 +0100</lastBuildDate>
+    <lastBuildDate>Mon, 10 Dec 2018 10:00:00 +0100</lastBuildDate>
     
 	<atom:link href="/posts/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Introduction à la base de données orientée graphe Neo4j</title>
+      <link>/posts/introduction-a-la-base-de-donnees-orientee-graphe-neo4j/</link>
+      <pubDate>Mon, 10 Dec 2018 10:00:00 +0100</pubDate>
+      
+      <guid>/posts/introduction-a-la-base-de-donnees-orientee-graphe-neo4j/</guid>
+      <description>&lt;p&gt;Je travaille depuis un an et demi sur un projet chez OVH qui calcule la qualité de service de notre infrastructure.&lt;/p&gt;
+
+&lt;p&gt;Cet outil, nommé DEPC, se compose d&amp;rsquo;une API développée en Flask ainsi que d&amp;rsquo;une WebUI. Le fonctionnement interne repose sur 3 composants majeurs :&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Apache Airflow pour le scheduling,&lt;/li&gt;
+&lt;li&gt;les base de données TimeSeries pour le calcul de la QOS,&lt;/li&gt;
+&lt;li&gt;et enfin la base de données Neo4j pour la gestion des dépendances.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Je ne vais pas présenter DEPC dans cet article, nous allons bientôt l&amp;rsquo;open sourcer et j&amp;rsquo;en parlerai à ce moment-là. En revanche laissez-moi vous présenter une base données que j&amp;rsquo;utilise désormais au quotidien et que j&amp;rsquo;affectionne tout particulièrement : &lt;strong&gt;Neo4j&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/images/neo4j_logo.png&#34; alt=&#34;&#34; style=&#34;display: block; margin-left: auto; margin-right: auto; width: 40%;&#34;&gt;
+&lt;/p&gt;</description>
+    </item>
     
     <item>
       <title>Gestion de Tâches avec Apache Airflow</title>

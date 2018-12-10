@@ -71,6 +71,230 @@
             
             <div class="posts">
                 
+                <h1 class="content-subhead">10 Dec 2018, 10:00</h1>
+                <section class="post">
+                    <header class="post-header">
+
+                        <a href="/posts/introduction-a-la-base-de-donnees-orientee-graphe-neo4j/" class="post-title">Introduction à la base de données orientée graphe Neo4j</a>
+
+                        <p class="post-meta">
+                            
+                            
+                        </p>
+                    </header>
+
+                    <div class="post-description">
+                        <p>Je travaille depuis un an et demi sur un projet chez OVH qui calcule la qualité de service de notre infrastructure.</p>
+
+<p>Cet outil, nommé DEPC, se compose d&rsquo;une API développée en Flask ainsi que d&rsquo;une WebUI. Le fonctionnement interne repose sur 3 composants majeurs :</p>
+
+<ul>
+<li>Apache Airflow pour le scheduling,</li>
+<li>les base de données TimeSeries pour le calcul de la QOS,</li>
+<li>et enfin la base de données Neo4j pour la gestion des dépendances.</li>
+</ul>
+
+<p>Je ne vais pas présenter DEPC dans cet article, nous allons bientôt l&rsquo;open sourcer et j&rsquo;en parlerai à ce moment-là. En revanche laissez-moi vous présenter une base données que j&rsquo;utilise désormais au quotidien et que j&rsquo;affectionne tout particulièrement : <strong>Neo4j</strong>.</p>
+
+<p><img src="/images/neo4j_logo.png" alt="" style="display: block; margin-left: auto; margin-right: auto; width: 40%;">
+</p>
+
+<h1 id="base-de-données-orientée-graphe">Base de données orientée graphe</h1>
+
+<p>En tant que développeur nous sommes habitués à travailler avec des bases de données relationnelles, que ce soit PostgreSQL, MySQL ou encore Oracle pour n&rsquo;en citer que quelques unes (<a href="https://en.wikipedia.org/wiki/List_of_relational_database_management_systems">la liste est longue</a>).</p>
+
+<p>Pour rappel l&rsquo;élément principal d&rsquo;une base de données relationnelle est la <strong>table</strong> : les données qui y sont stockées sont organisées sous forme de tableau où chaque ligne correspond à un enregistrement et chaque colonne à une catégorie de même type.</p>
+
+<p>Ce format est parfait pour la plupart de nos usages, notamment grâce à leur propriété <a href="https://en.wikipedia.org/wiki/ACID_(computer_science)">ACID</a>. Néanmoins les limites sont vite atteintes dans certains cas, notamment lorsqu&rsquo;il s&rsquo;agit de réaliser plusieurs jointures en une seule requête.</p>
+
+<p>Les bases de données orientées graphe ont donc été créées pour pallier entre autres à ce problème. Et on peut dire qu&rsquo;elles connaissent un succès grandissant depuis quelques années (<a href="https://db-engines.com/en/ranking_categories">source</a>):</p>
+
+<img src="/images/databases_model_trends.png" alt="" style="display: block; margin-left: auto; margin-right: auto; width: 70%;">
+
+<p>Et ça tombe bien puisque Neo4j est la base de données orientées graphe la plus répandue !</p>
+
+<h1 id="intérêts-des-graphes">Intérêts des graphes</h1>
+
+<p>Un graphe représente un ensemble de points reliés entre eux par des arcs (<a href="https://fr.wikipedia.org/wiki/Th%C3%A9orie_des_graphes">source de l&rsquo;image</a>):</p>
+
+<img src="/images/graphe.png" alt="" style="display: block; margin-left: auto; margin-right: auto; width: 70%;">
+
+<p>L&rsquo;intérêt des graphes devient évident lorsque l&rsquo;on souhaite visualiser les intéractions entre différentes données.</p>
+
+<p>Prenons le cas d&rsquo;un projet Python nécessitant de nombreuses librairies. Certaines de ces librairies nécessitent elles-même d&rsquo;autres librairies, et ainsi de suite. Il est très difficile avec pip de retrouver qui dépend de qui.</p>
+
+<p>Le projet <a href="https://github.com/scrapy/scrapy">Scrapy</a> par exemple requiert une vingtaine de librairies :</p>
+
+<pre><code class="language-bash">$ pip install scrapy
+$ pip freeze | wc -l
+25
+</code></pre>
+
+<p>Vous le savez la sortie de <code>pip freeze</code> nous renvoie la liste des modules <em>à plat</em>, sans aucune arborescence. Il est alors très difficile de visualiser quelle librairie dépend d&rsquo;une autre.</p>
+
+<p>Nous pouvons utiliser l&rsquo;outil <a href="https://github.com/naiquevin/pipdeptree">pipdeptree</a> afin de générer un arbre de dépendances de nos modules :</p>
+
+<pre><code class="language-bash">$ pip install pipdeptree graphviz
+$ pipdeptree --graph-output png &gt; scrapy.png
+</code></pre>
+
+<p>Nous obtenons le graphe suivant, bien plus lisible que le résultat de pip :</p>
+
+<img src="/images/scrapy_dependencies.png" alt="" class="pure-img" style="display: block; margin-left: auto; margin-right: auto;" />
+
+<p>Comme vous le voyez les graphes permettent très rapidement de comprendre la structure de la base de données et les relations entre les différents noeuds. Le graphe précédent nous permet facilement de distinguer quelles sont les dépendances directes et indirectes de Scrapy.</p>
+
+<p>Ce graphe ne contient que quelques dizaines de noeuds, nous pouvons donc facilement le parcourir de tête. Mais imaginez un graphe contenant plusieurs centaines de milliers de noeuds liés entre eux par des relations.</p>
+
+<p>Et bien Neo4j répond à cette problématique en nous fournissant les outils nécessaires à la construction et au parcours optimisé de nos graphes !</p>
+
+<h1 id="les-concepts">Les concepts</h1>
+
+<p>Les données stockées dans Neo4j vont donc être organisées sous la forme d’un graphe, les <strong>noeuds</strong> étant reliés entre eux par des <strong>relations</strong>. Des <strong>propriétés</strong> (clé:valeur) peuvent enrichir les noeuds et les relations afin d&rsquo;y ajouter du contexte :</p>
+
+<img src="/images/neo4j_concepts.png" alt="" class="pure-img" style="display: block; margin-left: auto; margin-right: auto;" />
+
+<p>Nous pouvons retrouver 2 noeuds dans ce graphe reliés entre eux par une relation de type <code>WORKS AT</code>. Des propriétés ont été ajoutées afin de compléter les informations propres à chaque noeud.</p>
+
+<p>Des noeuds de même type sont regroupés au sein de <strong>labels</strong> :</p>
+
+<img src="/images/neo4j_concepts_labels.png" alt="" class="pure-img" style="display: block; margin-left: auto; margin-right: auto;" />
+
+<p>Nous avons rajouté un noeud de label <code>Job</code>, lié au noeud <code>Person</code> via une relation de type <code>HAS</code>. Sur ce graphe nous pourrions très facilement répondre à la requête &ldquo;Donnes moi l&rsquo;emploi actuel de tous les développeurs Python Français&rdquo;.</p>
+
+<p>Et c&rsquo;est tout ! Il existe évidemment d&rsquo;autres notions internes à Neo4j, telles que les index ou les contraintes, mais ces 4 notions de base (noeuds, relations, propriétés, labels) suffisent à débuter l&rsquo;utilisation concrète de Neo4j !</p>
+
+<h1 id="installation">Installation</h1>
+
+<p>Neo4j s&rsquo;installe très simplement dès lors que Java 8 est disponible sur votre OS. Je suis pour ma part sur Debian, nous devons donc ajouter le repo officiel à nos sources :</p>
+
+<pre><code>$ wget -O - https://debian.neo4j.org/neotechnology.gpg.key | sudo apt-key add -
+$ echo 'deb https://debian.neo4j.org/repo stable/' | sudo tee -a /etc/apt/sources.list.d/neo4j.list
+$ sudo apt-get update
+</code></pre>
+
+<p>Puis nous installons ensuite Neo4j comme tous les autres packages (la dernière version stable à l&rsquo;écriture de cet article est la <strong>3.5.0</strong>) :</p>
+
+<pre><code>$ sudo apt-get install neo4j=1:3.5.0
+</code></pre>
+
+<h1 id="utilisation">Utilisation</h1>
+
+<p>La première chose à faire est d&rsquo;ouvrir le <strong>Neo4j Browser</strong> : il s&rsquo;agit d&rsquo;une application très pratique qui va vous permettre de créer vos données et de les visualiser à travers une interface web.</p>
+
+<p>Le browser est accessible en local sur le port 7474 : <a href="http://localhost:7474">http://localhost:7474</a>.</p>
+
+<p>Vous devez tout d&rsquo;abord vous connecter grâce aux identifiants <strong>neo4j / neo4j</strong> (pas d&rsquo;inquiétude le browser vous demandera tout de suite après de modifier votre mot de passe).</p>
+
+<p>Voici ce que vous devriez obtenir une fois connecté :</p>
+
+<img src="/images/neo4j_browser.png" alt="" style="display: block; margin-left: auto; margin-right: auto; width: 80%;">
+
+<p>Comme vous le voyez le browser peut se découper en 3 parties :</p>
+
+<ol>
+<li>C&rsquo;est ici que nous retrouverons des informations sur notre instance Neo4j, comme la version ou la taille, ainsi que la liste des <strong>labels</strong>, des types de <strong>relations</strong> et des <strong>propriétés</strong> stockées dans notre base de données.</li>
+<li>Ce formulaire va vous permettre de saisir vos requêtes afin d&rsquo;interroger Neo4j.</li>
+<li>Et c&rsquo;est dans cette vue que les résultats de vos précédentes requêtes s&rsquo;afficheront.</li>
+</ol>
+
+<p>Nous allons créer les 4 noeuds que j&rsquo;ai donné en exemple dans la partie <em>&ldquo;Les concepts&rdquo;</em>. Pour cela nous allons utilisons un langage de requête créé pour Neo4j : le <strong>Cypher</strong>, qui est un peu le SQL des graphes :)</p>
+
+<p>Par exemple l&rsquo;insertion et la sélection d&rsquo;une données en SQL se ferait grâce à la requête suivante :</p>
+
+<pre><code>CREATE TABLE person (name varchar, from varchar);
+INSERT INTO person VALUES ('Nicolas', 'France');
+SELECT * FROM person;
+</code></pre>
+
+<p>Voici l&rsquo;équivalent en Cypher :</p>
+
+<pre><code>CREATE(nico:Person{name: &quot;Nicolas&quot;, from: &quot;France&quot;}) RETURN nico;
+</code></pre>
+
+<p>Vous pouvez remarquer plusieurs choses :</p>
+
+<ul>
+<li>la création d&rsquo;un noeud se fait grâce au mot-clé <code>CREATE</code>,</li>
+<li>le noeud (que nous avons nommé <code>nico</code>) est entouré de parenthèses,</li>
+<li>les propriétés s&rsquo;ajoutent entre les accolades,</li>
+<li>nous retournons le noeud nouvellement créé.</li>
+</ul>
+
+<p>Notez également que nous n&rsquo;avons pas eu besoin de créer le label <code>Person</code>. En effet Neo4j s&rsquo;est chargé de le faire lui-même au moment de la création du noeud (pour rappel Neo4j fait partie des bases de données NoSQL).</p>
+
+<p>Nous pouvons d&rsquo;ailleurs le voir dans le Browser Neo4j sous la partie <em>&ldquo;Node Labels&rdquo;</em> :</p>
+
+<img src="/images/neo4j_create_node.png" alt="" style="display: block; margin-left: auto; margin-right: auto; width: 80%;">
+
+<p>Nous allons maintenant créer le noeud de type <code>Job</code> que nous lierons avec le noeud <code>Person</code> grâce à la requête suivante :</p>
+
+<pre><code>MATCH(nico:Person{name: &quot;Nicolas&quot;, from: &quot;France&quot;})
+CREATE(nico)-[:HAS]-&gt;(job:Job{profile: &quot;Dev&quot;, lang: &quot;Python&quot;})
+RETURN nico, job;
+</code></pre>
+
+<p>La forme change un peu ici :</p>
+
+<ol>
+<li>tout d&rsquo;abord je sélectionne le noeud <code>nico</code>,</li>
+<li>puis, en utilisant une seule requête CREATE, je créé en base le noeud <code>job</code> et j&rsquo;ajoute la relation <code>HAS</code> entre les deux,</li>
+<li>je retourne pour finir mes 2 noeuds.</li>
+</ol>
+
+<p>Les propriétés peuvent être visibles dans le Browser en survolant un noeud :</p>
+
+<img src="/images/neo4j_create_relationship.png" alt="" style="display: block; margin-left: auto; margin-right: auto; width: 80%;">
+
+<p>Pour finir créons en une seule requête les noeuds de type <code>Company</code> :</p>
+
+<pre><code>MATCH(nico:Person{name: &quot;Nicolas&quot;, from: &quot;France&quot;})
+MERGE(nico)-[:`WORKS AT`{since: 2015}]-&gt;(ovh:Company{name: &quot;OVH&quot;})
+MERGE(nico)-[:`WORKS AT`{until: 2015, since: 2013}]-&gt;(anssi:Company{name: &quot;Anssi&quot;})
+RETURN nico, ovh, anssi;
+</code></pre>
+
+<p><strong>Note :</strong> Les plus attentifs auront remarqué le mot-clé <code>MERGE</code>, que nous pourrions renommer en <code>GET or CREATE</code>. Il agit ici comme le <code>CREATE</code> que nous avons vu plus tôt, mais cette commande n&rsquo;aurait rien ajouté de plus si les noeuds <code>Company</code> et leurs relations existaient déjà. Je vous la montre car elle peut être très pratique lorsque l&rsquo;on souhaite réaliser des requêtes idempotentes.</p>
+
+<p>Il est désormais temps d&rsquo;afficher notre graphe, et le browser va nous être très pratique car nous allons le faire sans écrire une seule requête :</p>
+
+<ol>
+<li>Sélectionnez le label <code>Person</code> dans la liste des labels à gauche de l&rsquo;écran.</li>
+<li>Vous devriez voir apparaître le noeud <em>&ldquo;Nicolas&rdquo;</em>, cliquez dessus.</li>
+<li>Le noeud s&rsquo;entoure alors de différent bouton, cliquez sur celui du bas afin de <strong>déplier</strong> les dépendances directes.</li>
+</ol>
+
+<p>Nous avons bien affiché le graphe complet sans taper une ligne de Cypher :</p>
+
+<img src="/images/neo4j_expand_node.png" alt="" style="display: block; margin-left: auto; margin-right: auto; width: 80%;">
+
+<p>Pour info la requête équivalente aurait été la suivante :</p>
+
+<pre><code>MATCH(n:Person)-[]-&gt;(m) RETURN n, m
+</code></pre>
+
+<p>L&rsquo;astuce consiste à sélectionner les noeuds de type <code>Person</code>, puis à retourner l&rsquo;ensemble de ses dépendances sans rien filtrer. Attention néanmoins à cette requête si votre graphe contient trop de données, votre navigateur risque de ne pas apprécier :)</p>
+
+<p>Pour finir cette partie souvenez-vous de la question posée plus haut : &ldquo;Donnes moi l&rsquo;emploi actuel de tous les développeurs Python Français&rdquo;. Et bien la réponse serait apportée par la requête suivante :</p>
+
+<pre><code>MATCH(p:Person{from: 'France'})-[:HAS]-&gt;(:Job{profile: 'Dev', lang: 'Python'})
+MATCH(p)-[r:`WORKS AT`]-&gt;(c:Company)
+WHERE NOT EXISTS(r.until)
+RETURN p.name, c.name
+</code></pre>
+
+<img src="/images/neo4j_cypher.png" alt="" style="display: block; margin-left: auto; margin-right: auto; width: 80%;">
+
+<h1 id="conclusion">Conclusion</h1>
+
+<p>Nous n&rsquo;avons fait que survoler Neo4j et le Cypher. Si vous souhaitez en apprendre plus sur ce langage, je vous invite à vous tourner vers la <a href="https://neo4j.com/developer/cypher/">documentation officielle</a>, vous y apprendrez notamment à filtrer vos résultats, à les ordonner ou encore à utiliser des algorithmes optimisés de parcours de graphe.</p>
+
+<p>Comme je le disais en introduction de cet article j&rsquo;utilise désormais Neo4j au quotidien dans le cadre de DEPC. Nous gérons plusieurs millions de noeuds et autant de relations, et je dois dire que je ne suis pas du tout déçu de ce choix technique.</p>
+
+<p>Evidemment le choix d&rsquo;une base de données orientée graphe répondra généralement à une problématique précise. Bien souvent une base de données relationnelle répondra à vos besoins, mais si vos données peuvent s&rsquo;architecturer sous la forme d&rsquo;un graphe alors n&rsquo;hésitez pas et sautez le pas, vous ne serez pas déçu.</p>
+                    </div>
+                </section>
+                
                 <h1 class="content-subhead">02 Nov 2018, 09:25</h1>
                 <section class="post">
                     <header class="post-header">
@@ -476,7 +700,7 @@ parse_xml_op.set_downstream(send_mails_op)
 
 <p>Vous pouvez également <a href="https://www.saucs.com/cve">rechercher les vulnérabilités</a> par produit ou plus globalement par vendeur :</p>
 
-<img src="/images/saucs_cves.png" alt="" class="pure-img" >
+<img src="/images/saucs_cves.png" alt="" class="pure-img" style="display: block; margin-left: auto; margin-right: auto;" />
 
 <p>Saucs se repose sur les bases maintenues par le <a href="https://cve.mitre.org/">MITRE</a> et le <a href="https://nvd.nist.gov/vuln/full-listing">NVD</a> pour se synchroniser :</p>
 
@@ -489,11 +713,11 @@ parse_xml_op.set_downstream(send_mails_op)
 
 <p>Ces bases contiennent des données organisées permettant de classifier les vulnérabilités relatives à des produits. Saucs utilise par exemple les CPE afin de fournir une liste de vendeurs et de produits auxquels s&rsquo;abonner :</p>
 
-<img src="/images/saucs_vendors_products.png" alt="" class="pure-img" >
+<img src="/images/saucs_vendors_products.png" alt="" class="pure-img" style="display: block; margin-left: auto; margin-right: auto;" />
 
 <p>Concrètement les <a href="http://www.google.com">données fournies</a> par le NVD sont parsées régulièrement et des tâches Celery analysent les abonnements des utilisateurs pour envoyer les notifications. Il peut s&rsquo;agir d&rsquo;une nouvelle CVE, mais également de la modification d&rsquo;une CVE existante : nouvelle référence, changement du score CVSS, etc.</p>
 
-<img src="/images/saucs_email.png" alt="" class="pure-img" >
+<img src="/images/saucs_email.png" alt="" class="pure-img" style="display: block; margin-left: auto; margin-right: auto;" />
 
 <p>J&rsquo;ai débuté ce projet seul : c&rsquo;est une idée que j&rsquo;avais en tête depuis pas mal de temps, et en tant que dev Python aucun problème pour créer le site et les robots. Mais ceux qui administrent leur propre site le savent, un site web ce n&rsquo;est pas que du dev :)</p>
 
@@ -507,7 +731,7 @@ parse_xml_op.set_downstream(send_mails_op)
 
 <p>C&rsquo;est donc ce que nous allons faire dans les semaines à venir, à commencer par le système de <strong>Report</strong> qui a été lancé ce week-end :</p>
 
-<img src="/images/saucs_report.png" alt="" class="pure-img" >
+<img src="/images/saucs_report.png" alt="" class="pure-img" style="display: block; margin-left: auto; margin-right: auto;" />
 
 <p>Au niveau des fonctionnalités à venir, nous avons énormément d&rsquo;idées :</p>
 
@@ -610,7 +834,7 @@ wsgiref==0.1.2
 
 <p>Je suis tombé sur la librairie <a href="https://github.com/wa0x6e/cal-heatmap">cal-heatmap</a> qui permet de faire exactement la même chose avec les données que l&rsquo;on souhaite. J&rsquo;ai donc décidé de créer l&rsquo;équivalent pour Twitter, afin de visualiser facilement le <strong>nombre de Tweets envoyés par jour</strong> pour un utilisateur donné :</p>
 
-<img src="/images/twitter-calendar.png" alt="" class="pure-img" >
+<img src="/images/twitter-calendar.png" alt="" class="pure-img" style="display: block; margin-left: auto; margin-right: auto;" />
 
 <p>Ce calendrier représente les Tweets envoyés sur mon <a href="https://twitter.com/ncrocfer">compte Twitter</a>. Les données datent un peu puisque j&rsquo;ai poussé le code sur Github il y a déjà quelques mois (et j&rsquo;ai la flemme de refaire un screenshot ^^).</p>
 
@@ -896,7 +1120,7 @@ nsequat.\r\n&quot;,
 
 <p>Ce type d&rsquo;affichage est régulièrement utilisé sur certains sites pour les statistiques, comme ici chez <a href="http://stackoverflow.com/10m">StackOverflow</a> :</p>
 
-<img src="/images/split_int.png" alt="" class="pure-img" >
+<img src="/images/split_int.png" alt="" class="pure-img" style="display: block; margin-left: auto; margin-right: auto;" />
 
 <p>Voici la méthode que j&rsquo;utilise pour cela :</p>
 
@@ -933,319 +1157,6 @@ nsequat.\r\n&quot;,
 </code></pre>
 
 <p>Je ne connaissais pas et j&rsquo;avoue que c&rsquo;est beaucoup plus simple que ma fonction custom, je passerai par cette solution désormais :)</p>
-                    </div>
-                </section>
-                
-                <h1 class="content-subhead">27 Aug 2015, 18:05</h1>
-                <section class="post">
-                    <header class="post-header">
-
-                        <a href="/posts/creation-dapi-avec-scrapy-et-django/" class="post-title">Création d&#39;API Avec Scrapy et Django</a>
-
-                        <p class="post-meta">
-                            
-                            
-                        </p>
-                    </header>
-
-                    <div class="post-description">
-                        <p>La majorité des API se font désormais au format REST. Sous Django, de telles API peuvent facilement se créer grâce au toolkit <strong>Django REST framework</strong>.</p>
-
-<p>Nous allons voir dans cet article comment créer une API REST sous Django. Pour que l&rsquo;exemple soit ludique, nous créerons une API fournissant la liste complète des bières belge ! Pour cela nous utiliserons Scrapy afin de parser la page Wikipédia correspondante, puis nous utiliserons les modèles Django pour insérer les données en base.</p>
-
-<p></p>
-
-<h1 id="setup">Setup</h1>
-
-<p>On commence par créer un nouvel environnement virtuel qui contiendra l&rsquo;ensemble des packages utiles à notre projet :</p>
-
-<pre><code class="language-bash">$ mkvirtualenv beer-rest
-$ pip install Scrapy scrapy-djangoitem Django djangorestframework
-</code></pre>
-
-<p>Dans l&rsquo;ordre :</p>
-
-<ul>
-<li><strong>Scrapy</strong> va nous servir à parser la page Wikipédia et retourner les informations souhaitées,</li>
-<li><strong>scrapy-djangoitem</strong> nous permettra d&rsquo;utiliser les modèles Django dans notre projet Scrapy,</li>
-<li><strong>Django</strong> sera notre framework web,</li>
-<li><strong>djangorestframework</strong> va nous permettre de créer facilement notre API REST.</li>
-</ul>
-
-<p>Nous pouvons maintenant créer notre projet Django <strong>alcohol</strong>, ainsi que l&rsquo;application <strong>beer</strong> :</p>
-
-<pre><code class="language-bash">$ django-admin startproject alcohol
-$ cd alcohol
-$ ./manage.py startapp beer
-</code></pre>
-
-<h1 id="création-du-modèle">Création du modèle</h1>
-
-<p>La page Wikipédia <a href="https://fr.wikipedia.org/wiki/Liste_des_bi%C3%A8res_belges">suivante</a> propose la liste complète des bières belges, par ordre alphabétique.</p>
-
-<p>Nous allons enregistrer en base les informations données, à savoir :</p>
-
-<ul>
-<li>le nom de la bière</li>
-<li>le type</li>
-<li>la teneur en alcool</li>
-<li>la brasserie</li>
-</ul>
-
-<p>Voici le modèle correspondant :</p>
-
-<pre><code class="language-python"># ./alcohol/beer/models.py
-
-from django.db import models
-
-class Beer(models.Model):
-    nom = models.CharField(max_length=80)
-    type = models.CharField(max_length=30)
-    degre = models.CharField(max_length=6, null=True)
-    brasserie = models.CharField(max_length=80)
-
-    def __str__(self):
-        return self.nom
-</code></pre>
-
-<p>Certaines teneurs en alcool ne sont pas mentionnées, nous autorisons donc la valeur <strong>null</strong>.</p>
-
-<p>On active cette application dans le fichier <strong>settings.py</strong> de notre projet Django :</p>
-
-<pre><code class="language-python"># ./alcohol/alcohol/settings.py
-
-INSTALLED_APPS = (
-    ...
-    'beer'
-)
-</code></pre>
-
-<p>On synchronise ensuite la base de données :</p>
-
-<pre><code class="language-bash">$ ./manage.py makemigrations
-$ ./manage.py migrate
-</code></pre>
-
-<h1 id="récupération-des-bières-avec-scrapy">Récupération des bières avec Scrapy</h1>
-
-<p>Nous allons utiliser <strong>Scrapy</strong> pour extraire les données et les insérer en base.</p>
-
-<p>Toujours dans le dossier <strong>alcohol</strong>, nous créons un dossier <strong>scrapy</strong> qui contiendra nos crawlers (nous n&rsquo;en aurons qu&rsquo;un dans notre cas), puis nous initialisons un nouveau projet Scrapy :</p>
-
-<pre><code class="language-bash">$ mkdir scrapy
-$ cd scrapy
-$ scrapy startproject wikibeer
-$ cd wikibeer
-</code></pre>
-
-<p>Nous devrions normalement créer une sous-classe de <strong>scrapy.Item</strong>, contenant la liste des données souhaitées (nom, type, degre, brasserie). Néanmoins nous voulons que les données récupérées par Scrapy soient directement accessible via Django. Pour cela nous allons utiliser le package <strong>scrapy-djangoitem</strong> qui se chargera lui-même d&rsquo;insérer les éléments en base.</p>
-
-<p>Voici donc à quoi ressemble notre classe item :</p>
-
-<pre><code class="language-python"># -*- coding: utf-8 -*-
-# ./alcohol/scrapy/wikibeer/wikibeer/items.py
-
-from scrapy_djangoitem import DjangoItem
-from beer.models import Beer
-
-class WikibeerItem(DjangoItem):
-    django_model = Beer
-</code></pre>
-
-<p>L&rsquo;accès au modèle <strong>Beer</strong> de notre projet Django est rendu possible en ajoutant les lignes suitantes au fichier <strong>settings.py</strong> de votre projet Scrapy :</p>
-
-<pre><code class="language-python"># -*- coding: utf-8 -*-
-# ./alcohol/scrapy/wikibeer/wikibeer/settings.py
-
-import sys
-sys.path.append('/opt/projects/alcohol')
-
-import os
-os.environ['DJANGO_SETTINGS_MODULE'] = 'alcohol.settings'
-
-...
-</code></pre>
-
-<p>Pensez à modifier le chemin selon votre configuration.</p>
-
-<p>Il ne reste plus qu&rsquo;à créer notre spider qui se chargera de retourner les données contenues dans la page :</p>
-
-<pre><code class="language-python"># -*- coding: utf-8 -*-
-# ./alcohol/scrapy/wikibeer/wikibeer/spiders/wikibeer_spider.py
-
-import scrapy
-from wikibeer.items import WikibeerItem
-
-
-class WikibeerSpider(scrapy.Spider):
-    name = &quot;wikibeer&quot;
-    allowed_domains = [&quot;fr.wikipedia.org&quot;]
-    start_urls = [
-        &quot;https://fr.wikipedia.org/wiki/Liste_des_bi%C3%A8res_belges&quot;,
-    ]
-
-    def parse(self, response):
-        for sel in response.xpath('//table[contains(@class, &quot;wikitable&quot;)]//tr'):
-
-            # On vérifie qu'il ne s'agit pas du header du tableau
-            nom = sel.xpath('td[1]//text()').extract()
-            if not nom:
-                continue
-
-            item = WikibeerItem()
-            item['nom'] = &quot;&quot;.join(nom)
-            item['type'] = &quot;&quot;.join(sel.xpath('td[2]//text()').extract())
-            item['degre'] = &quot;&quot;.join(sel.xpath('td[3]//text()').extract())
-            item['brasserie'] = &quot;&quot;.join(sel.xpath('td[4]//text()').extract())
-
-            item.save()
-</code></pre>
-
-<p>Je ne m&rsquo;attarde pas sur ce code, n&rsquo;hésitez pas à jeter un oeil à la <a href="http://doc.scrapy.org/en/1.0/">documentation</a> de Scrapy si vous voulez plus d&rsquo;informations. Scrapy est un crawler web extrèmement puissant, et le spider précédent n&rsquo;exploite qu&rsquo;une infime partie de ses possibilités.</p>
-
-<p>Notez tout de même l&rsquo;utilisation de la méthode save() sur l&rsquo;item (plutôt que de le renvoyer via un yield) qui permet d&rsquo;enregistrer l&rsquo;objet en base.</p>
-
-<p>Le spider peut enfin être lancé grâce à la commande suivante :</p>
-
-<pre><code class="language-bash">$ scrapy crawl wikibeer
-2015-08-27 18:23:50 [scrapy] INFO: Scrapy 1.0.1 started (bot: wikibeer)
-2015-08-27 18:23:50 [scrapy] INFO: Optional features available: ssl, http11
-2015-08-27 18:23:50 [scrapy] INFO: Overridden settings: {'NEWSPIDER_MODULE': 'wikibeer.spiders', 'SPIDER_MODULES': ['wikibeer.spiders'], 'BOT_NAME': 'wikibeer'}
-2015-08-27 18:23:50 [scrapy] INFO: Enabled extensions: CloseSpider, TelnetConsole, LogStats, CoreStats, SpiderState
-2015-08-27 18:23:50 [scrapy] INFO: Enabled downloader middlewares: HttpAuthMiddleware, DownloadTimeoutMiddleware, UserAgentMiddleware, RetryMiddleware, DefaultHeadersMiddleware, MetaRefreshMiddleware, HttpCompressionMiddleware, RedirectMiddleware, CookiesMiddleware, ChunkedTransferMiddleware, DownloaderStats
-2015-08-27 18:23:50 [scrapy] INFO: Enabled spider middlewares: HttpErrorMiddleware, OffsiteMiddleware, RefererMiddleware, UrlLengthMiddleware, DepthMiddleware
-2015-08-27 18:23:50 [scrapy] INFO: Enabled item pipelines:
-2015-08-27 18:23:50 [scrapy] INFO: Spider opened
-2015-08-27 18:23:50 [scrapy] INFO: Crawled 0 pages (at 0 pages/min), scraped 0 items (at 0 items/min)
-2015-08-27 18:23:51 [scrapy] DEBUG: Telnet console listening on 127.0.0.1:6023
-2015-08-27 18:23:51 [scrapy] DEBUG: Crawled (200) &lt;GET https://fr.wikipedia.org/wiki/Liste_des_bi%C3%A8res_belges&gt; (referer: None)
-2015-08-27 18:23:52 [django.db.backends] DEBUG: (0.000) QUERY = u'BEGIN' - PARAMS = (); args=None
-2015-08-27 18:23:52 [django.db.backends] DEBUG: (0.001) QUERY = u'INSERT INTO &quot;beer_beer&quot; (&quot;nom&quot;, &quot;type&quot;, &quot;degre&quot;, &quot;brasserie&quot;) VALUES (%s, %s, %s, %s)' - PARAMS = (u'3 Scht\xe9ng', u'Fermentation haute', u'6\xa0%', u&quot;Brasserie Grain d'Orge&quot;); args=[u'3 Scht\xe9ng', u'Fermentation haute', u'6\xa0%', u&quot;Brasserie Grain d'Orge&quot;]
-2015-08-27 18:23:52 [scrapy] INFO: Received SIGINT, shutting down gracefully. Send again to force
-2015-08-27 18:23:52 [django.db.backends] DEBUG: (0.000) QUERY = u'BEGIN' - PARAMS = (); args=None
-2015-08-27 18:23:52 [django.db.backends] DEBUG: (0.000) QUERY = u'INSERT INTO &quot;beer_beer&quot; (&quot;nom&quot;, &quot;type&quot;, &quot;degre&quot;, &quot;brasserie&quot;) VALUES (%s, %s, %s, %s)' - PARAMS = (u'IV Saison', u'Saison', u'6,5\xa0%', u'Brasserie de Jandrain-Jandrenouille'); args=[u'IV Saison', u'Saison', u'6,5\xa0%', u'Brasserie de Jandrain-Jandrenouille']
-2015-08-27 18:23:52 [django.db.backends] DEBUG: (0.000) QUERY = u'BEGIN' - PARAMS = (); args=None
-2015-08-27 18:23:52 [django.db.backends] DEBUG: (0.000) QUERY = u'INSERT INTO &quot;beer_beer&quot; (&quot;nom&quot;, &quot;type&quot;, &quot;degre&quot;, &quot;brasserie&quot;) VALUES (%s, %s, %s, %s)' - PARAMS = (u'V Cense', u'Fermentation haute, Sp\xe9ciale', u'7,5\xa0%', u'Brasserie de Jandrain-Jandrenouille'); args=[u'V Cense', u'Fermentation haute, Sp\xe9ciale', u'7,5\xa0%', u'Brasserie de Jandrain-Jandrenouille']
-2015-08-27 18:23:52 [django.db.backends] DEBUG: (0.000) QUERY = u'BEGIN' - PARAMS = (); args=None
-2015-08-27 18:23:52 [django.db.backends] DEBUG: (0.000) QUERY = u'INSERT INTO &quot;beer_beer&quot; (&quot;nom&quot;, &quot;type&quot;, &quot;degre&quot;, &quot;brasserie&quot;) VALUES (%s, %s, %s, %s)' - PARAMS = (u'VI Wheat', u'Fermentation haute, Blanche', u'6\xa0%', u'Brasserie de Jandrain-Jandrenouille'); args=[u'VI Wheat', u'Fermentation haute, Blanche', u'6\xa0%', u'Brasserie de Jandrain-Jandrenouille']
-2015-08-27 18:23:52 [django.db.backends] DEBUG: (0.000) QUERY = u'BEGIN' - PARAMS = (); args=None
-2015-08-27 18:23:52 [django.db.backends] DEBUG: (0.000) QUERY = u'INSERT INTO &quot;beer_beer&quot; (&quot;nom&quot;, &quot;type&quot;, &quot;degre&quot;, &quot;brasserie&quot;) VALUES (%s, %s, %s, %s)' - PARAMS = (u'26.2 M', u'Blonde', u'4,8\xa0%', u&quot;Brasserie L'\xc9chapp\xe9e Belle&quot;); args=[u'26.2 M', u'Blonde', u'4,8\xa0%', u&quot;Brasserie L'\xc9chapp\xe9e Belle&quot;]
-...
-</code></pre>
-
-<p>Les données sont bien enregistrées en base de données, le tout en passant par notre modèle Django :</p>
-
-<img src="/images/scrapy-django-rest-1.png" alt="" class="pure-img" >
-
-<h1 id="mise-en-place-de-django-rest-framework">Mise en place de Django Rest Framework</h1>
-
-<p>Nous avons maintenant la liste entière des bières dans notre base de données. Nous pouvons créer un serializer basé sur notre modèle <strong>Beer</strong> :</p>
-
-<pre><code class="language-python"># ./alcohol/beer/serializers.py
-
-from beer.models import Beer
-from rest_framework import serializers
-
-class BeerSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = Beer
-        fields = ('nom', 'type', 'degre', 'brasserie')
-</code></pre>
-
-<p>Nous créons ensuite une vue qui sera une sous-classe de <strong>rest_framework.viewsets.ModelViewSet</strong> dans laquelle nous renseignons la requête utilisée (toutes les bières) et le serializer créé précédemment :</p>
-
-<pre><code class="language-python"># ./alcohol/beer/views.py
-
-from rest_framework import viewsets
-from beer.models import Beer
-from beer.serializers import BeerSerializer
-
-class BeerViewSet(viewsets.ModelViewSet):
-    queryset = Beer.objects.all()
-    serializer_class = BeerSerializer
-</code></pre>
-
-<p>Les urls de notre projet doivent être renseignées dans le fichier <strong>alcohol/urls.py</strong> (dans notre cas l&rsquo;API sera accessible via <a href="http://localhost:8000/api/beers/">http://localhost:8000/api/beers/</a> :</p>
-
-<pre><code class="language-python"># ./alcohol/alcohol/urls.py
-
-from django.contrib import admin
-from django.conf.urls import url, include
-from rest_framework import routers
-from beer.views import BeerViewSet
-
-router = routers.DefaultRouter()
-router.register(r'api/beers', BeerViewSet)
-
-urlpatterns = [
-    url(r'^admin/', include(admin.site.urls)),
-    url(r'^', include(router.urls))
-]
-</code></pre>
-
-<p>Il ne reste plus qu&rsquo;à activer l&rsquo;application <strong>Django Rest Framework</strong> dans le fichier <strong>settings.py</strong> de notre projet Django :</p>
-
-<pre><code class="language-python"># ./alcohol/alcohol/settings.py
-
-INSTALLED_APPS = (
-        ...
-        'rest_framework',
-        'beer'
-)
-
-</code></pre>
-
-<h1 id="test-de-l-api">Test de l&rsquo;API</h1>
-
-<p>Et voilà ! Nous avons rapratrier un jeu de données via Scrapy, nous avons mis en place notre API via Django Rest Framework, nous pouvons désormais la tester.</p>
-
-<p>On lance tout d&rsquo;abord le serveur :</p>
-
-<pre><code class="language-python">$ ./manage.py runserver
-Performing system checks...
-
-System check identified no issues (0 silenced).
-August 27, 2015 - 18:28:08
-Django version 1.8.4, using settings 'alcohol.settings'
-Starting development server at http://127.0.0.1:8000/
-Quit the server with CONTROL-C.
-</code></pre>
-
-<p>Puis nous utilisons <strong>curl</strong> (par exemple) pour accéder à notre API :</p>
-
-<pre><code class="language-bash">$ curl -H 'Accept: application/json; indent=4' http://127.0.0.1:8000/api/beers/
-...
-{
-    &quot;nom&quot;: &quot;Abbaye du Park Blonde&quot;,
-    &quot;type&quot;: &quot;Abbaye, Blonde&quot;,
-    &quot;degre&quot;: &quot;6 %&quot;,
-    &quot;brasserie&quot;: &quot;Brasserie Haacht&quot;
-},
-{
-    &quot;nom&quot;: &quot;Abbaye du Park Brune&quot;,
-    &quot;type&quot;: &quot;Abbaye, Brune&quot;,
-    &quot;degre&quot;: &quot;6 %&quot;,
-    &quot;brasserie&quot;: &quot;Brasserie Haacht&quot;
-},
-{
-    &quot;nom&quot;: &quot;Abdis Blond&quot;,
-    &quot;type&quot;: &quot;Blonde&quot;,
-    &quot;degre&quot;: &quot;6,5 %&quot;,
-    &quot;brasserie&quot;: &quot;Brasserie Riva&quot;
-},
-{
-    &quot;nom&quot;: &quot;Abdis Bruin&quot;,
-    &quot;type&quot;: &quot;Brune&quot;,
-    &quot;degre&quot;: &quot;6,5 %&quot;,
-    &quot;brasserie&quot;: &quot;Brasserie Riva&quot;
-}
-...
-</code></pre>
-
-<p>Notez pour finir que <strong>Django Rest Framework</strong> fournit également une interface web pour consulter votre API :</p>
-
-<p><img src="/images/scrapy-django-rest-2.png" alt="" class="pure-img" >
-<img src="/images/scrapy-django-rest-3.png" alt="" class="pure-img" ></p>
                     </div>
                 </section>
                 
