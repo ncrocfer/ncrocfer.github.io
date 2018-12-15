@@ -1,0 +1,22 @@
+
+.posts-year {
+    font-size: 2rem;
+}
+
+.post-line {
+    margin: 12px 0;
+}
+
+.posts-date, .posts-title {
+    font-size: 1.2rem;
+}
+
+.posts-title a {
+    color: #222;
+    border-bottom: 1px solid #ddd;
+    text-decoration: none;
+}
+
+.posts-title a:hover {
+    border-color: #222;
+}

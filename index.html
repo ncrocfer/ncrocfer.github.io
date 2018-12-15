@@ -21,19 +21,22 @@
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/pure-min.css">
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/grids-responsive-min.css">
 
-    <link rel="stylesheet" href="/css/all.min.css">
+    <link rel="stylesheet" href="https://ncrocfer.github.io/css/all.min.css">
+    <link rel="stylesheet" href="https://ncrocfer.github.io/css/flexboxgrid.min.css">
+    <link rel="stylesheet" href="https://ncrocfer.github.io/css/custom.css">
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
 
-    <link rel="alternate" type="application/rss+xml" title="Nicolas Crocfer" href="/index.xml" />
+    <link rel="alternate" type="application/rss+xml" title="Nicolas Crocfer" href="https://ncrocfer.github.io/index.xml" />
 </head>
 <body>
+
 
 
 <div id="layout" class="pure-g">
     <div class="sidebar pure-u-1 pure-u-md-1-4">
     <div class="header">
         <hgroup>
-            <h1 class="brand-title"><a href="">Nicolas Crocfer</a></h1>
+            <h1 class="brand-title"><a href="https://ncrocfer.github.io">Nicolas Crocfer</a></h1>
             <h2 class="brand-tagline"> Python Developer </h2>
         </hgroup>
 
@@ -56,7 +59,13 @@
                 
                 
                 <li class="nav-item">
-                    <a class="pure-button" href="/index.xml">
+                    <a class="pure-button" href="https://www.linkedin.com/in/nicolascrocfer">
+                        <i class="fa fa-linkedin"></i> LinkedIn
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="pure-button" href="https://ncrocfer.github.io/index.xml">
                         <i class="fa fa-rss"></i> rss
                     </a>
                 </li>
@@ -68,240 +77,144 @@
 
     <div class="content pure-u-1 pure-u-md-3-4">
         <div>
-            
-            <div class="posts">
-                
-                <h1 class="content-subhead">10 Dec 2018, 10:00</h1>
-                <section class="post">
-                    <header class="post-header">
+            <div id="posts-list">
+                <section>
+                  <h1 class="posts-year">2018</h1>
 
-                        <a href="/posts/introduction-a-la-base-de-donnees-orientee-graphe-neo4j/" class="post-title">Introduction à la base de données orientée graphe Neo4j</a>
-
-                        <p class="post-meta">
-                            
-                            
-                        </p>
-                    </header>
-
-                    <div class="post-description">
-                        <p>Je travaille depuis un an et demi sur un projet chez OVH qui calcule la qualité de service de notre infrastructure.</p>
-
-<p>Cet outil, nommé DEPC, se compose d&rsquo;une API développée en Flask ainsi que d&rsquo;une WebUI. Le fonctionnement interne repose sur 3 composants majeurs :</p>
-
-<ul>
-<li>Apache Airflow pour le scheduling,</li>
-<li>les base de données TimeSeries pour le calcul de la QOS,</li>
-<li>et enfin la base de données Neo4j pour la gestion des dépendances.</li>
-</ul>
-
-<p>Je ne vais pas présenter DEPC dans cet article, nous allons bientôt l&rsquo;open sourcer et j&rsquo;en parlerai à ce moment-là. En revanche laissez-moi vous présenter une base données que j&rsquo;utilise désormais au quotidien et que j&rsquo;affectionne tout particulièrement : <strong>Neo4j</strong>.</p>
-
-<p><img src="/images/neo4j_logo.png" alt="" style="display: block; margin-left: auto; margin-right: auto; width: 40%;">
-</p><a href="/posts/introduction-a-la-base-de-donnees-orientee-graphe-neo4j/">Read More…</a>
+                  <div class="row post-line">
+                    <div class="posts-date col-xs-1">
+                      <time datetime="2018-12-10 10:00:00 CET">Dec 10</time>
                     </div>
+                    <div class="posts-title col-xs-11">
+                      <a href="/posts/introduction-a-la-base-de-donnees-orientee-graphe-neo4j/">Introduction à la base de données orientée graphe Neo4j</a>
+                    </div>
+                  </div>
+                  <div class="row post-line">
+                    <div class="posts-date col-xs-1">
+                      <time datetime="2018-11-02 09:25:49 CET">Nov 02</time>
+                    </div>
+                    <div class="posts-title col-xs-11">
+                      <a href="/posts/gestion-de-taches-avec-apache-airflow/">Gestion de Tâches avec Apache Airflow</a>
+                    </div>
+                  </div>
+                  
                 </section>
-                
-                <h1 class="content-subhead">02 Nov 2018, 09:25</h1>
-                <section class="post">
-                    <header class="post-header">
+                <section>
+                  <h1 class="posts-year">2017</h1>
 
-                        <a href="/posts/gestion-de-taches-avec-apache-airflow/" class="post-title">Gestion de Tâches avec Apache Airflow</a>
-
-                        <p class="post-meta">
-                            
-                            
-                        </p>
-                    </header>
-
-                    <div class="post-description">
-                        <p>Apache Airflow est un outil open source d’orchestration de workflows : si vous êtes habitués à gérer des tâches cron au quotidien, alors cet article devrez vous plaire.</p>
-
-<p></p><a href="/posts/gestion-de-taches-avec-apache-airflow/">Read More…</a>
+                  <div class="row post-line">
+                    <div class="posts-date col-xs-1">
+                      <time datetime="2017-08-07 01:03:59 CEST">Aug 07</time>
                     </div>
+                    <div class="posts-title col-xs-11">
+                      <a href="/posts/gerer-vos-cve-avec-saucs/">Gérer vos CVE avec Saucs</a>
+                    </div>
+                  </div>
+                  
                 </section>
-                
-                <h1 class="content-subhead">07 Aug 2017, 01:03</h1>
-                <section class="post">
-                    <header class="post-header">
+                <section>
+                  <h1 class="posts-year">2015</h1>
 
-                        <a href="/posts/gerer-vos-cve-avec-saucs/" class="post-title">Gérer vos CVE avec Saucs</a>
-
-                        <p class="post-meta">
-                            
-                            
-                        </p>
-                    </header>
-
-                    <div class="post-description">
-                        <p>Je vais vous présenter un projet infosec sur lequel je travaille depuis plusieurs mois : <a href="https://www.saucs.com">Saucs.com</a>.</p>
-
-<p>Cette plateforme web vous permet de manager vos alertes de sécurité en vous abonnant à différents produits et vendeurs. Dès lors qu&rsquo;une nouvelle vulnérabilité est détectée, une alerte est créée et un rapport vous est envoyé par mail.</p>
-
-<p></p><a href="/posts/gerer-vos-cve-avec-saucs/">Read More…</a>
+                  <div class="row post-line">
+                    <div class="posts-date col-xs-1">
+                      <time datetime="2015-12-23 23:22:23 &#43;0200">Dec 23</time>
                     </div>
-                </section>
-                
-                <h1 class="content-subhead">23 Dec 2015, 23:22</h1>
-                <section class="post">
-                    <header class="post-header">
-
-                        <a href="/posts/installer-un-module-a-la-creation-dun-virtualenv/" class="post-title">Installer un module à la création d&#39;un virtualenv</a>
-
-                        <p class="post-meta">
-                            
-                            
-                        </p>
-                    </header>
-
-                    <div class="post-description">
-                        <p>L&rsquo;utilisation des environnements virtuels (avec <strong>Virtualenv</strong> et <strong>Virtualenvwrapper</strong>) est inévitable si vous développez régulièrement en Python. D&rsquo;une part leur utilisation permet de laisser votre hôte propre, et d&rsquo;autre part différentes versions d&rsquo;un même module peuvent être testées de manière très simple.</p>
-
-<p></p><a href="/posts/installer-un-module-a-la-creation-dun-virtualenv/">Read More…</a>
+                    <div class="posts-title col-xs-11">
+                      <a href="/posts/installer-un-module-a-la-creation-dun-virtualenv/">Installer un module à la création d&#39;un virtualenv</a>
                     </div>
-                </section>
-                
-                <h1 class="content-subhead">08 Dec 2015, 22:58</h1>
-                <section class="post">
-                    <header class="post-header">
-
-                        <a href="/posts/twitter-calendar/" class="post-title">Twitter calendar</a>
-
-                        <p class="post-meta">
-                            
-                            
-                        </p>
-                    </header>
-
-                    <div class="post-description">
-                        <p>Si vous utilisez de temps à autre Github, vous êtes déjà probablement tombé sur le profil d&rsquo;un développeur avec le calendrier de ses contributions. Plus le nombre de contributions est élevé, plus la couleur de la case sera foncée.</p>
-
-<p></p><a href="/posts/twitter-calendar/">Read More…</a>
+                  </div>
+                  <div class="row post-line">
+                    <div class="posts-date col-xs-1">
+                      <time datetime="2015-12-08 22:58:21 &#43;0200">Dec 08</time>
                     </div>
-                </section>
-                
-                <h1 class="content-subhead">30 Nov 2015, 21:01</h1>
-                <section class="post">
-                    <header class="post-header">
-
-                        <a href="/posts/autoreload-des-modules-sous-ipython/" class="post-title">Autoreload des modules sous iPython</a>
-
-                        <p class="post-meta">
-                            
-                            
-                        </p>
-                    </header>
-
-                    <div class="post-description">
-                        <p>Si vous utilisez iPython comme interpréteur Python (et si ce n&rsquo;est pas le cas vous loupez quelque chose), il vous est certainement déjà arrivé de bosser dessus dans un terminal, dans un autre de modifier l&rsquo;un des modules importés, puis de relancer la fonction dans iPython. Sauf que ce dernier n&rsquo;a pas rechargé le code et que le résultat est le même qu&rsquo;avant.</p>
-
-<p></p><a href="/posts/autoreload-des-modules-sous-ipython/">Read More…</a>
+                    <div class="posts-title col-xs-11">
+                      <a href="/posts/twitter-calendar/">Twitter calendar</a>
                     </div>
-                </section>
-                
-                <h1 class="content-subhead">27 Nov 2015, 00:10</h1>
-                <section class="post">
-                    <header class="post-header">
-
-                        <a href="/posts/installer-python-3-5-1rc1/" class="post-title">Installer Python 3 5 1rc1</a>
-
-                        <p class="post-meta">
-                            
-                            
-                        </p>
-                    </header>
-
-                    <div class="post-description">
-                        <p>La version 3.5.1rc1 de Python est sortie cette semaine, incluant <a href="https://docs.python.org/3.5/whatsnew/changelog.html#python-3-5-1-release-candidate-1">de nombreuses corrections</a>.</p>
-
-<p>Voici comment l&rsquo;installer si vous souhaitez la tester. Sur mon laptop j&rsquo;ai un répertoire dans lequel je place les sources des différentes versions de Python (<strong>~/dev/python/src</strong>), et un autre dans lequel je compile les binaires (<strong>~/dev/python/bin</strong>).</p>
-
-<p></p><a href="/posts/installer-python-3-5-1rc1/">Read More…</a>
+                  </div>
+                  <div class="row post-line">
+                    <div class="posts-date col-xs-1">
+                      <time datetime="2015-11-30 21:01:09 &#43;0200">Nov 30</time>
                     </div>
-                </section>
-                
-                <h1 class="content-subhead">24 Nov 2015, 23:18</h1>
-                <section class="post">
-                    <header class="post-header">
-
-                        <a href="/posts/netstat-sur-debian-8-jessie/" class="post-title">netstat sur Debian 8 Jessie</a>
-
-                        <p class="post-meta">
-                            
-                            
-                        </p>
-                    </header>
-
-                    <div class="post-description">
-                        <p>Lorsqu&rsquo;on utilise docker pour développer, on ne sait pas toujours sur quel OS on va tomber. Tout dépend du choix du créateur de l&rsquo;image : on tombera parfois sur du Debian, parfois sur du Ubuntu, parfois encore sur du CentOS.</p>
-
-<p></p><a href="/posts/netstat-sur-debian-8-jessie/">Read More…</a>
+                    <div class="posts-title col-xs-11">
+                      <a href="/posts/autoreload-des-modules-sous-ipython/">Autoreload des modules sous iPython</a>
                     </div>
-                </section>
-                
-                <h1 class="content-subhead">27 Sep 2015, 18:16</h1>
-                <section class="post">
-                    <header class="post-header">
-
-                        <a href="/posts/formater-du-json-dans-le-terminal/" class="post-title">Formater du JSON dans le terminal</a>
-
-                        <p class="post-meta">
-                            
-                            
-                        </p>
-                    </header>
-
-                    <div class="post-description">
-                        <p>Il m&rsquo;arrive de devoir lire un fichier JSON dans le terminal. Dans bien des cas malheureusement ce fichier n&rsquo;est pas formaté et la lecture est quasiment impossible.</p>
-
-<p></p><a href="/posts/formater-du-json-dans-le-terminal/">Read More…</a>
+                  </div>
+                  <div class="row post-line">
+                    <div class="posts-date col-xs-1">
+                      <time datetime="2015-11-27 00:10:32 &#43;0200">Nov 27</time>
                     </div>
-                </section>
-                
-                <h1 class="content-subhead">14 Sep 2015, 23:19</h1>
-                <section class="post">
-                    <header class="post-header">
-
-                        <a href="/posts/separer-un-entier-tous-les-n-chiffres/" class="post-title">Séparer un entier tous les n chiffres</a>
-
-                        <p class="post-meta">
-                            
-                            
-                        </p>
-                    </header>
-
-                    <div class="post-description">
-                        <p>Sous Python, le découpage d&rsquo;une chaîne de caractères en plusieurs parties s&rsquo;effectue grâce à la méthode <strong>split()</strong>. Mais parfois cette dernière ne suffit pas : le découpage d&rsquo;un entier par bloc de 3 caractères par exemple.</p>
-
-<p>Dans ce cas il faudra en effet partir de la fin de l&rsquo;entier : <em>2000000</em> deviendra <em>2 000 000</em>, <em>1234</em> deviendra <em>1 234</em>, etc.</p>
-
-<p></p><a href="/posts/separer-un-entier-tous-les-n-chiffres/">Read More…</a>
+                    <div class="posts-title col-xs-11">
+                      <a href="/posts/installer-python-3-5-1rc1/">Installer Python 3 5 1rc1</a>
                     </div>
+                  </div>
+                  <div class="row post-line">
+                    <div class="posts-date col-xs-1">
+                      <time datetime="2015-11-24 23:18:55 &#43;0200">Nov 24</time>
+                    </div>
+                    <div class="posts-title col-xs-11">
+                      <a href="/posts/netstat-sur-debian-8-jessie/">netstat sur Debian 8 Jessie</a>
+                    </div>
+                  </div>
+                  <div class="row post-line">
+                    <div class="posts-date col-xs-1">
+                      <time datetime="2015-09-27 18:16:18 CEST">Sep 27</time>
+                    </div>
+                    <div class="posts-title col-xs-11">
+                      <a href="/posts/formater-du-json-dans-le-terminal/">Formater du JSON dans le terminal</a>
+                    </div>
+                  </div>
+                  <div class="row post-line">
+                    <div class="posts-date col-xs-1">
+                      <time datetime="2015-09-14 23:19:17 CEST">Sep 14</time>
+                    </div>
+                    <div class="posts-title col-xs-11">
+                      <a href="/posts/separer-un-entier-tous-les-n-chiffres/">Séparer un entier tous les n chiffres</a>
+                    </div>
+                  </div>
+                  <div class="row post-line">
+                    <div class="posts-date col-xs-1">
+                      <time datetime="2015-08-27 18:05:34 CEST">Aug 27</time>
+                    </div>
+                    <div class="posts-title col-xs-11">
+                      <a href="/posts/creation-dapi-avec-scrapy-et-django/">Création d&#39;API Avec Scrapy et Django</a>
+                    </div>
+                  </div>
+                  <div class="row post-line">
+                    <div class="posts-date col-xs-1">
+                      <time datetime="2015-08-19 00:30:35 CEST">Aug 19</time>
+                    </div>
+                    <div class="posts-title col-xs-11">
+                      <a href="/posts/serialiser-une-instance-de-classe-en-json-sous-python/">Sérialiser une instance de classe en JSON sous Python</a>
+                    </div>
+                  </div>
+                  <div class="row post-line">
+                    <div class="posts-date col-xs-1">
+                      <time datetime="2015-08-05 00:11:35 CEST">Aug 05</time>
+                    </div>
+                    <div class="posts-title col-xs-11">
+                      <a href="/posts/modifier-le-header-par-defaut-dans-docutils/">Modifier le header par défaut dans docutils</a>
+                    </div>
+                  </div>
+                  <div class="row post-line">
+                    <div class="posts-date col-xs-1">
+                      <time datetime="2015-08-03 16:32:43 CEST">Aug 03</time>
+                    </div>
+                    <div class="posts-title col-xs-11">
+                      <a href="/posts/creer-une-commande-personnalisee-pour-git/">Créer une commande personnalisée pour Git</a>
+                    </div>
+                  </div>
+                  <div class="row post-line">
+                    <div class="posts-date col-xs-1">
+                      <time datetime="2015-07-23 20:09:44 CEST">Jul 23</time>
+                    </div>
+                    <div class="posts-title col-xs-11">
+                      <a href="/posts/hello-world/">Hello world</a>
+                    </div>
+                  </div>
+                  
                 </section>
                 
             </div>
-            
-<div class="pagination">
-  <nav role="pagination" class="post-list-pagination">
-      
-    <span class="post-list-pagination-item post-list-pagination-item-current">Page 1 of 2</span>
-    
-      <a href="/page/2/" class="post-list-pagination-item pure-button post-list-pagination-item-next">
-        Older&nbsp;<i class="fa fa-angle-double-right"></i>
-      </a>
-    
-  </nav>
-</div>
-
-
-            <div class="footer">
-    <div class="pure-menu pure-menu-horizontal pure-menu-open">
-        <ul>
-            <li>Powered by <a class="hugo" href="https://gohugo.io/" target="_blank">hugo</a></li>
-        </ul>
-    </div>
-</div>
-<script src="/js/all.min.js"></script>
-
         </div>
     </div>
 </div>

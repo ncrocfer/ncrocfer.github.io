@@ -3,99 +3,99 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>/posts/introduction-a-la-base-de-donnees-orientee-graphe-neo4j/</loc>
+    <loc>https://ncrocfer.github.io/posts/introduction-a-la-base-de-donnees-orientee-graphe-neo4j/</loc>
     <lastmod>2018-12-10T10:00:00+01:00</lastmod>
   </url>
   
   <url>
-    <loc>/posts/gestion-de-taches-avec-apache-airflow/</loc>
+    <loc>https://ncrocfer.github.io/posts/gestion-de-taches-avec-apache-airflow/</loc>
     <lastmod>2018-11-02T09:25:49+01:00</lastmod>
   </url>
   
   <url>
-    <loc>/posts/gerer-vos-cve-avec-saucs/</loc>
+    <loc>https://ncrocfer.github.io/posts/gerer-vos-cve-avec-saucs/</loc>
     <lastmod>2017-08-07T01:03:59+02:00</lastmod>
   </url>
   
   <url>
-    <loc>/posts/installer-un-module-a-la-creation-dun-virtualenv/</loc>
+    <loc>https://ncrocfer.github.io/posts/installer-un-module-a-la-creation-dun-virtualenv/</loc>
     <lastmod>2015-12-23T23:22:23+02:00</lastmod>
   </url>
   
   <url>
-    <loc>/posts/twitter-calendar/</loc>
+    <loc>https://ncrocfer.github.io/posts/twitter-calendar/</loc>
     <lastmod>2015-12-08T22:58:21+02:00</lastmod>
   </url>
   
   <url>
-    <loc>/posts/autoreload-des-modules-sous-ipython/</loc>
+    <loc>https://ncrocfer.github.io/posts/autoreload-des-modules-sous-ipython/</loc>
     <lastmod>2015-11-30T21:01:09+02:00</lastmod>
   </url>
   
   <url>
-    <loc>/posts/installer-python-3-5-1rc1/</loc>
+    <loc>https://ncrocfer.github.io/posts/installer-python-3-5-1rc1/</loc>
     <lastmod>2015-11-27T00:10:32+02:00</lastmod>
   </url>
   
   <url>
-    <loc>/posts/netstat-sur-debian-8-jessie/</loc>
+    <loc>https://ncrocfer.github.io/posts/netstat-sur-debian-8-jessie/</loc>
     <lastmod>2015-11-24T23:18:55+02:00</lastmod>
   </url>
   
   <url>
-    <loc>/posts/formater-du-json-dans-le-terminal/</loc>
+    <loc>https://ncrocfer.github.io/posts/formater-du-json-dans-le-terminal/</loc>
     <lastmod>2015-09-27T18:16:18+02:00</lastmod>
   </url>
   
   <url>
-    <loc>/posts/separer-un-entier-tous-les-n-chiffres/</loc>
+    <loc>https://ncrocfer.github.io/posts/separer-un-entier-tous-les-n-chiffres/</loc>
     <lastmod>2015-09-14T23:19:17+02:00</lastmod>
   </url>
   
   <url>
-    <loc>/posts/creation-dapi-avec-scrapy-et-django/</loc>
+    <loc>https://ncrocfer.github.io/posts/creation-dapi-avec-scrapy-et-django/</loc>
     <lastmod>2015-08-27T18:05:34+02:00</lastmod>
   </url>
   
   <url>
-    <loc>/posts/serialiser-une-instance-de-classe-en-json-sous-python/</loc>
+    <loc>https://ncrocfer.github.io/posts/serialiser-une-instance-de-classe-en-json-sous-python/</loc>
     <lastmod>2015-08-19T00:30:35+02:00</lastmod>
   </url>
   
   <url>
-    <loc>/posts/modifier-le-header-par-defaut-dans-docutils/</loc>
+    <loc>https://ncrocfer.github.io/posts/modifier-le-header-par-defaut-dans-docutils/</loc>
     <lastmod>2015-08-05T00:11:35+02:00</lastmod>
   </url>
   
   <url>
-    <loc>/posts/creer-une-commande-personnalisee-pour-git/</loc>
+    <loc>https://ncrocfer.github.io/posts/creer-une-commande-personnalisee-pour-git/</loc>
     <lastmod>2015-08-03T16:32:43+02:00</lastmod>
   </url>
   
   <url>
-    <loc>/posts/hello-world/</loc>
+    <loc>https://ncrocfer.github.io/posts/hello-world/</loc>
     <lastmod>2015-07-23T20:09:44+02:00</lastmod>
   </url>
   
   <url>
-    <loc>/categories/</loc>
+    <loc>https://ncrocfer.github.io/categories/</loc>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>/</loc>
+    <loc>https://ncrocfer.github.io/</loc>
     <lastmod>2018-12-10T10:00:00+01:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>/posts/</loc>
+    <loc>https://ncrocfer.github.io/posts/</loc>
     <lastmod>2018-12-10T10:00:00+01:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>/tags/</loc>
+    <loc>https://ncrocfer.github.io/tags/</loc>
     <priority>0</priority>
   </url>
   
