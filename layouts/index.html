@@ -1,0 +1,32 @@
+{{ partial "header.html" . }}
+
+<div id="layout" class="pure-g">
+    {{ partial "sidebar.html" . }}
+
+    <div class="content pure-u-1 pure-u-md-3-4">
+        <div>
+            <div id="posts-list">
+                {{ range .Data.Pages.GroupByDate "2006" -}}
+                <section>
+                  <h1 class="posts-year">{{ .Key }}</h1>
+
+                  {{ range .Pages -}}
+                  <div class="row post-line">
+                    <div class="posts-date col-xs-1">
+                      <time datetime="{{ .Date.Format "2006-01-02 15:04:05 MST" }}">{{ .Date.Format "Jan 02"}}</time>
+                    </div>
+                    <div class="posts-title col-xs-11">
+                      <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+                    </div>
+                  </div>
+                  {{ end }}
+                </section>
+                {{ end }}
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ partial "analytics.html" . }}
+</body>
+</html>

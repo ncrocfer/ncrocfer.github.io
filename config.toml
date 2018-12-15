@@ -2,6 +2,7 @@ languageCode = "fr-FR"
 title = "Nicolas Crocfer"
 theme = "purehugo"
 Paginate = 10
+baseURL = "https://ncrocfer.github.io"
 
 [params]
   hideShareOptions = true
@@ -9,3 +10,4 @@ Paginate = 10
   githubName = "ncrocfer"
   description = "Python Developer"
   google_analytics = "UA-65778407-1"
+  linkedinName = "nicolascrocfer"
