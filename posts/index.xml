@@ -6,10 +6,25 @@
     <description>Recent content in Posts on Nicolas Crocfer</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>fr-FR</language>
-    <lastBuildDate>Mon, 10 Dec 2018 10:00:00 +0100</lastBuildDate>
+    <lastBuildDate>Sun, 27 Oct 2019 23:44:30 +0100</lastBuildDate>
     
 	<atom:link href="https://ncrocfer.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Retour d&#39;experience sur le lancement d&#39;un projet opensource</title>
+      <link>https://ncrocfer.github.io/posts/retour-experience-lancement-projet-opensource/</link>
+      <pubDate>Sun, 27 Oct 2019 23:44:30 +0100</pubDate>
+      
+      <guid>https://ncrocfer.github.io/posts/retour-experience-lancement-projet-opensource/</guid>
+      <description>&lt;p&gt;Ceux qui me suivent sur &lt;a href=&#34;https://twitter.com/ncrocfer&#34;&gt;Twitter&lt;/a&gt; savent que j&amp;rsquo;ai créé il y a quelque temps une plateforme dédiée à l&amp;rsquo;alerting de vulnérabilités : &lt;a href=&#34;https://www.saucs.com&#34;&gt;Saucs.com&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Déjà 3 ans (le premier commit date du 03/11/2016) que le projet vit et que de nombreux utilisateurs s&amp;rsquo;en servent pour effectuer leur veille au quotidien. Malheureusement la vie personnelle et professionnelle fait qu&amp;rsquo;il est très difficile de maintenir seul ce genre de projet, c&amp;rsquo;est pourquoi il a été décidé en 2019 d&amp;rsquo;opensourcer Saucs.&lt;/p&gt;
+
+&lt;p&gt;Cet article explique les difficultés d&amp;rsquo;un tel projet.&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;</description>
+    </item>
     
     <item>
       <title>Introduction à la base de données orientée graphe Neo4j</title>

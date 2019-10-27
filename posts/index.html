@@ -80,6 +80,81 @@
             
             <div class="posts">
                 
+                <h1 class="content-subhead">27 Oct 2019, 23:44</h1>
+                <section class="post">
+                    <header class="post-header">
+
+                        <a href="https://ncrocfer.github.io/posts/retour-experience-lancement-projet-opensource/" class="post-title">Retour d&#39;experience sur le lancement d&#39;un projet opensource</a>
+
+                        <p class="post-meta">
+                            
+                            
+                        </p>
+                    </header>
+
+                    <div class="post-description">
+                        <p>Ceux qui me suivent sur <a href="https://twitter.com/ncrocfer">Twitter</a> savent que j&rsquo;ai créé il y a quelque temps une plateforme dédiée à l&rsquo;alerting de vulnérabilités : <a href="https://www.saucs.com">Saucs.com</a>.</p>
+
+<p>Déjà 3 ans (le premier commit date du 03/11/2016) que le projet vit et que de nombreux utilisateurs s&rsquo;en servent pour effectuer leur veille au quotidien. Malheureusement la vie personnelle et professionnelle fait qu&rsquo;il est très difficile de maintenir seul ce genre de projet, c&rsquo;est pourquoi il a été décidé en 2019 d&rsquo;opensourcer Saucs.</p>
+
+<p>Cet article explique les difficultés d&rsquo;un tel projet.</p>
+
+<p></p>
+
+<h1 id="pourquoi-opensourcer-saucs">Pourquoi opensourcer Saucs</h1>
+
+<p>Pour info la plateforme s&rsquo;appelait à l&rsquo;origine SecAdvisory, mais nous avons décidé de la renommer lorsque <a href="https://twitter.com/LaurentDurnez">Laurent</a> a pris part au projet en tant que sysadmin. Il a depuis fait un boulot de fou, et si le site tient si bien la charge c&rsquo;est vraiment grâce à lui et à l&rsquo;architecture qu&rsquo;il a su mettre en place.</p>
+
+<p>A la base Saucs est né d&rsquo;un besoin personnel : je souhaitais être tenu au courant des vulnérabilités d&rsquo;un produit mais aucune plateforme ne répondait à mes attentes. L&rsquo;idée a donc été de parser les CVE mises à disposition par le NVD, d&rsquo;en extraire les produits associés (grâce aux CPE) puis de proposer un système d&rsquo;alertes basé dessus.</p>
+
+<p>En soit le principe est extrèmement simple, mais de nombreux utilisateurs ont été séduits par Saucs, peut-être dû au fait que le NVD ne fournit pas cette fonctionnalité sur son propre site. Les chiffres actuels sont plutôt sympas : au moment de l&rsquo;écriture de cet article nous comptons exactement 3,351 utilisateurs et 1,184,274 rapports envoyés.</p>
+
+<p>Malheureusement nous ne sommes pas assez et nous n&rsquo;avons pas le temps de tout gérer. Alors que nous avons des tonnes d&rsquo;idées en tête, leur concrétisation est devenu très compliquée par simple manque de temps. Les fonctionnalités ne sortent plus à un rythme convenable, et c&rsquo;est pourquoi nous avons donc décidé début 2019 de libérer le code source et de transformer Saucs en solution opensource.</p>
+
+<p>A priori l&rsquo;idée est excellente : un code maintenu par la communauté, plus de fonctionnalités, d&rsquo;autres outils basés dessus, la possibilité d&rsquo;installation on-premise, etc.</p>
+
+<p>Mais c&rsquo;est bien plus facile à dire qu&rsquo;à faire, et je vais vous expliquer dans cet article pourquoi. En outre les utilisateurs réclamant à tout bout de champs où j&rsquo;en suis comprendront peut-être un peu mieux pourquoi cela met autant de temps :)</p>
+
+<h1 id="les-difficultés-rencontrées">Les difficultés rencontrées</h1>
+
+<p>La principale difficulté que j&rsquo;ai rencontré a été de me <em>replonger</em> dans mon propre code source ! Cela faisait plusieurs mois que je n&rsquo;y avais pas touché (voire plus d&rsquo;un an), et la reprise a été difficile.</p>
+
+<p>Il a ensuite fallu décider ce que je devais garder et ce que je devais modifier. La liste des choses à changer était finalement assez courte : le thème (indispensable car acheté en ligne et sous licence), l&rsquo;upgrade des dépendances, un peu de refacto par-ci par-là, et c&rsquo;était à priori tout. Ce qui pouvait me paraître simple m&rsquo;a finalement pris plusieurs soirées et week-ends sur mon temps libre (pour rappel ce projet n&rsquo;est en aucun cas lié à mon job).</p>
+
+<p>Ce travail de refacto a malheureusement fait apparaître un nouveau problème : le legacy accumulé en 3 ans. En effet l&rsquo;écosystème entourant les CVE avait sacrément évolué, et les flux proposés par le NVD aussi. Les fichiers XML sur lesquels Saucs se basait sont désormais dépréciés par un flux JSON. Encore une fois, ce qui peut paraître simple (&ldquo;il suffit de changer le parser, voyons&rdquo;) ne l&rsquo;est pas forcément quand ça n&rsquo;a pas été prévu (dépendances fortes dans le code).</p>
+
+<p>Anecdote amusante : j&rsquo;ai entamé la migration du XML vers le JSON il y a quelques mois. A ce moment-là le NVD fournissait la version 1.0 de ce flux, et je me servais d&rsquo;une clé nommée <em>affects</em> pour parser les vendeurs et leurs produits affectés. Cette clé était très pratique puisqu&rsquo;elle fournissait directement la liste dans un format simple. Malheureusement j&rsquo;ai eu la mauvaise surprise en revenant de vacances de constater que mon code levait une exception&hellip; la clé avait été supprimée dans la nouvelle version 1.1 de ce flux (<a href="https://nvd.nist.gov/General/News/JSON-1-1-Vulnerability-Feed-Release">changelog</a>):</p>
+
+<blockquote>
+<p><em>&ldquo;In CVE_JSON_4.0_min.schema, the affects element has been removed from the required properties.&rdquo;</em></p>
+</blockquote>
+
+<p>Encore du travail non prévu. Je pourrai également citer l&rsquo;exemple des CVSS : Saucs était à l&rsquo;origine basé sur la version 2 alors que la version 3 est désormais proposée. Un changement dans le model Python (et donc dans la database directement) a dû être opéré, impliquant des migrations dans le schema actuel.</p>
+
+<p>Le refacto du code m&rsquo;a également permis de détecter ce que je pourrais appeler aujourd&rsquo;hui <em>des erreurs de conception</em>. Erreurs qui me paraissaient normales et non gênantes il y a 3 ans. C&rsquo;est là qu&rsquo;on remarque que notre façon de coder évolue dans le temps :)</p>
+
+<p>Pour finir il est également important de noter que le code ne pouvait pas être opensourcer tel quel car l&rsquo;installation était pour ainsi dire <em>chaotique</em>. En effet l&rsquo;import initial des CVE, CPE et CWE prenait plusieurs heures, il a donc fallut travailler à l&rsquo;amélioration de cette partie. Pour info c&rsquo;est désormais faisable en quelques minutes grâce à la commande <code>saucs import</code>.</p>
+
+<h1 id="les-erreurs-à-éviter">Les erreurs à éviter</h1>
+
+<p>Je dirai que la principale erreur que j&rsquo;ai commise a été d&rsquo;annoncer l&rsquo;opensource de Saucs avant même d&rsquo;avoir commencé à travailler dessus.</p>
+
+<p>Je ne savais pas la charge de travail que cela allait représenter, et j&rsquo;ai créé une attente parmi certains utilisateurs. Il faut savoir que je reçois régulièrement des messages sur Twitter de personnes, et parfois d&rsquo;entreprises, qui me demandent où j&rsquo;en suis. La plupart de ces messages sont bienveillants. Les utilisateurs souhaitent juste l&rsquo;utiliser chez eux en local, ou alors certaines entreprises me contactent pour affiner leur propre roadmap. Néanmoins je reçois parfois des messages pouvant se résumer à : <em>&ldquo;bah alors t&rsquo;en es où de l&rsquo;opensource ?? Ca traine !&rdquo;</em>. Ceux-là me font sourire, et dans ces cas-là je leur rappelle tout simplement que je ne leur dois rien.</p>
+
+<p>Dans tous les cas je vous conseille de bien à réfléchir à votre roadmap avant d&rsquo;annoncer quoi que ce soit, l&rsquo;attente créée peut être énorme et on vous demandera tôt ou tard des comptes.</p>
+
+<p>Ma deuxième erreur a été de vouloir trop en faire. Je me suis lancé dans un refacto complet du code, ce qui a impliqué beaucoup de changements que je n&rsquo;avais pas prévu. J&rsquo;ai finalement décidé de stopper ces évolutions avant l&rsquo;opensource et de les proposer après. Qui sait, peut-être que ce sera la communauté elle-même qui les créera. J&rsquo;en serai ravi !</p>
+
+<h1 id="and-next">And next ?</h1>
+
+<p>L&rsquo;ajout de la version 3 des CVSS a rajouté un bug lors de l&rsquo;envoie des mails, j&rsquo;ai découvert ça ce week-end et je dois le fixer. Une fois cela fait nous allons écrire les scripts pour migrer les données de la base actuelle vers le nouveau schema. Seulement à ce moment là, lorsque la nouvelle version sera disponible en ligne sur <a href="https://www.saucs.com">Saucs.com</a>, le code source pourra être libéré sur Github.</p>
+
+<p>J&rsquo;ai hâte que ce moment arrive, d&rsquo;une part car je sais que l&rsquo;attente a été longue et que certains d&rsquo;entres vous sont impatients, et d&rsquo;autre part car des développeurs m&rsquo;ont déjà proposé leur aide pour de futures fonctionnalités.</p>
+
+<p>Nous avons vraiment envie que ce projet serve au plus grand nombre, et cela ne peut passer que par l&rsquo;opensource. C&rsquo;est la dernière ligne droite, ça devient bon !</p>
+                    </div>
+                </section>
+                
                 <h1 class="content-subhead">10 Dec 2018, 10:00</h1>
                 <section class="post">
                     <header class="post-header">
@@ -1105,67 +1180,6 @@ nsequat.\r\n&quot;,
 <p>Le &ldquo;.&rdquo; est l&rsquo;expression de base de <strong>jq</strong> qui permet de renvoyer le résultat sans le modifier.</p>
 
 <p>Bien sûr je ne montre ici que l&rsquo;utilisation basique de l&rsquo;outil. Comme je le disais avant il existe énormément d&rsquo;options et je vous invite à lire la <a href="https://stedolan.github.io/jq/manual/">doc</a> pour en savoir plus.</p>
-                    </div>
-                </section>
-                
-                <h1 class="content-subhead">14 Sep 2015, 23:19</h1>
-                <section class="post">
-                    <header class="post-header">
-
-                        <a href="https://ncrocfer.github.io/posts/separer-un-entier-tous-les-n-chiffres/" class="post-title">Séparer un entier tous les n chiffres</a>
-
-                        <p class="post-meta">
-                            
-                            
-                        </p>
-                    </header>
-
-                    <div class="post-description">
-                        <p>Sous Python, le découpage d&rsquo;une chaîne de caractères en plusieurs parties s&rsquo;effectue grâce à la méthode <strong>split()</strong>. Mais parfois cette dernière ne suffit pas : le découpage d&rsquo;un entier par bloc de 3 caractères par exemple.</p>
-
-<p>Dans ce cas il faudra en effet partir de la fin de l&rsquo;entier : <em>2000000</em> deviendra <em>2 000 000</em>, <em>1234</em> deviendra <em>1 234</em>, etc.</p>
-
-<p></p>
-
-<p>Ce type d&rsquo;affichage est régulièrement utilisé sur certains sites pour les statistiques, comme ici chez <a href="http://stackoverflow.com/10m">StackOverflow</a> :</p>
-
-<img src="/images/split_int.png" alt="" class="pure-img" style="display: block; margin-left: auto; margin-right: auto;" />
-
-<p>Voici la méthode que j&rsquo;utilise pour cela :</p>
-
-<pre><code class="language-python">def split_int(number, separator=' ', count=3):
-    return separator.join(
-        [str(number)[::-1][i:i+count] for i in range(0, len(str(number)), count)]
-    )[::-1]
-</code></pre>
-
-<p>On peut l&rsquo;utiliser pour reproduire l&rsquo;affichage de StackOverflow :</p>
-
-<pre><code class="language-python">&gt;&gt;&gt; split_int(10144157, ',')
-10,144,157
-</code></pre>
-
-<h1 id="edit">Edit</h1>
-
-<p>J&rsquo;ai reçu un <a href="https://twitter.com/sam_et_max/status/644019728374235136">tweet</a> de <strong>@SamEtMax</strong> proposant une solution incluse dans la stdlib. Elle fonctionne grâce à la lib <strong>locale</strong> et sa méthode <strong>format</strong>, qui dispose de l&rsquo;argument <strong>grouping</strong>.</p>
-
-<p>L&rsquo;avantage principale de cette méthode est qu&rsquo;elle se base sur la localisation de l&rsquo;utilisateur : en France nous séparons les milliers par un espace (1 024), les Anglais utilisent la virgule (1,024) par exemple.</p>
-
-<p>La lib locale convertira l&rsquo;entier directement sous le bon format :</p>
-
-<pre><code class="language-python">&gt;&gt;&gt; import locale
-&gt;&gt;&gt; locale.setlocale(locale.LC_ALL, 'en_US.utf8')
-'en_US.utf8'
-&gt;&gt;&gt; print(locale.format(&quot;%d&quot;, 1024, grouping=True))
-1,024
-&gt;&gt;&gt; locale.setlocale(locale.LC_ALL, 'fr_FR.utf8')
-'fr_FR.utf8'
-&gt;&gt;&gt; print(locale.format(&quot;%d&quot;, 1024, grouping=True))
-1 024
-
-</code></pre>
-
-<p>Je ne connaissais pas et j&rsquo;avoue que c&rsquo;est beaucoup plus simple que ma fonction custom, je passerai par cette solution désormais :)</p>
                     </div>
                 </section>
                 

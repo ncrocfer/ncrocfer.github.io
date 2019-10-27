@@ -80,6 +80,67 @@
             
             <div class="posts">
                 
+                <h1 class="content-subhead">14 Sep 2015, 23:19</h1>
+                <section class="post">
+                    <header class="post-header">
+
+                        <a href="https://ncrocfer.github.io/posts/separer-un-entier-tous-les-n-chiffres/" class="post-title">Séparer un entier tous les n chiffres</a>
+
+                        <p class="post-meta">
+                            
+                            
+                        </p>
+                    </header>
+
+                    <div class="post-description">
+                        <p>Sous Python, le découpage d&rsquo;une chaîne de caractères en plusieurs parties s&rsquo;effectue grâce à la méthode <strong>split()</strong>. Mais parfois cette dernière ne suffit pas : le découpage d&rsquo;un entier par bloc de 3 caractères par exemple.</p>
+
+<p>Dans ce cas il faudra en effet partir de la fin de l&rsquo;entier : <em>2000000</em> deviendra <em>2 000 000</em>, <em>1234</em> deviendra <em>1 234</em>, etc.</p>
+
+<p></p>
+
+<p>Ce type d&rsquo;affichage est régulièrement utilisé sur certains sites pour les statistiques, comme ici chez <a href="http://stackoverflow.com/10m">StackOverflow</a> :</p>
+
+<img src="/images/split_int.png" alt="" class="pure-img" style="display: block; margin-left: auto; margin-right: auto;" />
+
+<p>Voici la méthode que j&rsquo;utilise pour cela :</p>
+
+<pre><code class="language-python">def split_int(number, separator=' ', count=3):
+    return separator.join(
+        [str(number)[::-1][i:i+count] for i in range(0, len(str(number)), count)]
+    )[::-1]
+</code></pre>
+
+<p>On peut l&rsquo;utiliser pour reproduire l&rsquo;affichage de StackOverflow :</p>
+
+<pre><code class="language-python">&gt;&gt;&gt; split_int(10144157, ',')
+10,144,157
+</code></pre>
+
+<h1 id="edit">Edit</h1>
+
+<p>J&rsquo;ai reçu un <a href="https://twitter.com/sam_et_max/status/644019728374235136">tweet</a> de <strong>@SamEtMax</strong> proposant une solution incluse dans la stdlib. Elle fonctionne grâce à la lib <strong>locale</strong> et sa méthode <strong>format</strong>, qui dispose de l&rsquo;argument <strong>grouping</strong>.</p>
+
+<p>L&rsquo;avantage principale de cette méthode est qu&rsquo;elle se base sur la localisation de l&rsquo;utilisateur : en France nous séparons les milliers par un espace (1 024), les Anglais utilisent la virgule (1,024) par exemple.</p>
+
+<p>La lib locale convertira l&rsquo;entier directement sous le bon format :</p>
+
+<pre><code class="language-python">&gt;&gt;&gt; import locale
+&gt;&gt;&gt; locale.setlocale(locale.LC_ALL, 'en_US.utf8')
+'en_US.utf8'
+&gt;&gt;&gt; print(locale.format(&quot;%d&quot;, 1024, grouping=True))
+1,024
+&gt;&gt;&gt; locale.setlocale(locale.LC_ALL, 'fr_FR.utf8')
+'fr_FR.utf8'
+&gt;&gt;&gt; print(locale.format(&quot;%d&quot;, 1024, grouping=True))
+1 024
+
+</code></pre>
+
+<p>Je ne connaissais pas et j&rsquo;avoue que c&rsquo;est beaucoup plus simple que ma fonction custom, je passerai par cette solution désormais :)</p>
+                    </div>
+                </section>
+                
                 <h1 class="content-subhead">27 Aug 2015, 18:05</h1>
                 <section class="post">
                     <header class="post-header">
