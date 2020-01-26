@@ -3,6 +3,11 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>https://ncrocfer.github.io/posts/celery-importance-pool-execution/</loc>
+    <lastmod>2020-01-12T13:25:39+01:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://ncrocfer.github.io/posts/retour-experience-lancement-projet-opensource/</loc>
     <lastmod>2019-10-27T23:44:30+01:00</lastmod>
   </url>
@@ -89,13 +94,13 @@
   
   <url>
     <loc>https://ncrocfer.github.io/</loc>
-    <lastmod>2019-10-27T23:44:30+01:00</lastmod>
+    <lastmod>2020-01-12T13:25:39+01:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>https://ncrocfer.github.io/posts/</loc>
-    <lastmod>2019-10-27T23:44:30+01:00</lastmod>
+    <lastmod>2020-01-12T13:25:39+01:00</lastmod>
     <priority>0</priority>
   </url>
   

@@ -80,6 +80,240 @@
             
             <div class="posts">
                 
+                <h1 class="content-subhead">12 Jan 2020, 13:25</h1>
+                <section class="post">
+                    <header class="post-header">
+
+                        <a href="https://ncrocfer.github.io/posts/celery-importance-pool-execution/" class="post-title">Celery : l&#39;importance du pool d&#39;exécution</a>
+
+                        <p class="post-meta">
+                            
+                            
+                        </p>
+                    </header>
+
+                    <div class="post-description">
+                        
+
+<p>En tant que dev nous sommes régulièrement amenés à devoir exécuter des tâches en arrière-plan. La plupart du temps il s&rsquo;agira de répondre à une action de l&rsquo;utilisateur (call d&rsquo;API, click sur un bouton&hellip;), parfois nous aurons besoin de lancer une tâche de manière périodique.</p>
+
+<p>Dans les 2 cas l&rsquo;objectif est de ne pas bloquer le processus principal. En effet je vous laisse imaginer les pertes de performance si, au moment d&rsquo;un POST sur votre API, votre application se chargeait d&rsquo;exécuter elle-même une tâche lourde et très longue. L&rsquo;application rendrait la main à l&rsquo;utilisateur plusieurs secondes, voire plusieurs minutes, après le call.</p>
+
+<img src="/images/celery.png" alt="" style="display: block; margin-left: auto; margin-right: auto; ">
+
+<p>Pour répondre à ce besoin les dev Python ont pris l&rsquo;habitude d&rsquo;utiliser la librairie <strong>Celery</strong>. Cet article n&rsquo;est pas une introduction à cet outil, pour cela je vous renvoie vers le <a href="https://docs.celeryproject.org/en/latest/getting-started/first-steps-with-celery.html">quickstart</a> officiel, vous comprendrez rapidement à quoi il sert et surtout comment l&rsquo;utiliser.</p>
+
+<p>Nous allons parler ici d&rsquo;une feature qui est parfois délaissée lorsqu&rsquo;on utilise Celery : les <strong>pools d&rsquo;exécution</strong>. Derrière cette notion se cache toute la magie de Celery : comment et par quoi mes tâches vont-elles s&rsquo;exécuter. Et vous allez voir que configurer correctement cette option peut amener des gains de performances incroyables !</p>
+
+<h1 id="la-théorie">La théorie</h1>
+
+<p>Lorsque nous lançons un worker Celery, nous lançons en fait un processus chargé de coordonner le lancement des tâches empilées dans le broker. En réalité leur exécution à proprement parler ne sera pas effectuée par ce processus mais par d&rsquo;autres processus enfants ou par des threads qu&rsquo;il aura lui-même spawné.</p>
+
+<p>Et c&rsquo;est justement la façon dont est configuré le pool d&rsquo;éxécution qui détermine comment sont lancés ces processus ou threads capables d&rsquo;exécuter les tâches.</p>
+
+<p>Celery fournit par défaut 4 pools d&rsquo;exécution : <strong>prefork</strong>, <strong>solo</strong>, <strong>gevent</strong> et <strong>eventlet</strong>. La configuration s&rsquo;effectue via l&rsquo;option <code>-P</code>.</p>
+
+<h2 id="mode-prefork">Mode prefork</h2>
+
+<p>Par défault le pool sélectionné par Celery est le prefork. Nous pouvons facilement le voir lorsque nous lançons un worker :</p>
+
+<pre><code>$ celery -A tasks worker
+celery@LAPTOP v4.4.0 (cliffs)
+
+Darwin-17.7.0-x86_64-i386-64bit 2020-01-26 14:31:06
+
+[config]
+.&gt; app:         tasks:0x10566ca20
+.&gt; transport:   redis://localhost:6379/0
+.&gt; results:     disabled://
+.&gt; concurrency: 4 (prefork)
+.&gt; task events: OFF (enable -E to monitor tasks in this worker)
+
+[queues]
+.&gt; celery           exchange=celery(direct) key=celery
+</code></pre>
+
+<p>Ici la ligne <code>concurrency: 4 (prefork)</code> nous indique que nous utilisons le pool <code>prefork</code> avec une concurrency de <strong>4</strong>. Ce mode d&rsquo;exécution se base sur le package <a href="https://docs.python.org/fr/3/library/multiprocessing.html">multiprocessing</a> : Celery va donc spawner autant de processus que le nombre de coeurs de votre machine.</p>
+
+<p>Nous pouvons vérifier que les processus ont bien été spawnés par Celery (le process principal et les 4 forks):</p>
+
+<pre><code>$ ps -A | grep -i celery
+91822 ttys000    0:01.59 /Users/ncrocfer/Dev/celery_pool/venv/bin/python3 /Users/ncrocfer/Dev/celery_pool/venv/bin/celery -A tasks worker
+91828 ttys000    0:00.02 /Users/ncrocfer/Dev/celery_pool/venv/bin/python3 /Users/ncrocfer/Dev/celery_pool/venv/bin/celery -A tasks worker
+91829 ttys000    0:00.02 /Users/ncrocfer/Dev/celery_pool/venv/bin/python3 /Users/ncrocfer/Dev/celery_pool/venv/bin/celery -A tasks worker
+91830 ttys000    0:00.02 /Users/ncrocfer/Dev/celery_pool/venv/bin/python3 /Users/ncrocfer/Dev/celery_pool/venv/bin/celery -A tasks worker
+91831 ttys000    0:00.02 /Users/ncrocfer/Dev/celery_pool/venv/bin/python3 /Users/ncrocfer/Dev/celery_pool/venv/bin/celery -A tasks worker
+</code></pre>
+
+<p>Ce mode est particulièrement adapté aux applications nécessitant du calcul par le CPU (ces applications sont dîtes <strong>CPU bound</strong>). Plus vous aurez de coeurs puissants et plus votre application pourra traiter de tâches en parallèle.</p>
+
+<p>A noter que la concurrency est paramétrable via l&rsquo;option <code>-c</code> :</p>
+
+<pre><code>$ celery -A tasks worker -c 2
+...
+.&gt; concurrency: 2 (prefork)
+...
+</code></pre>
+
+<h2 id="mode-solo">Mode solo</h2>
+
+<p>Ce mode est un peu particulier car le processus principal se chargera lui-même d&rsquo;exécuter les tâches qu&rsquo;il consommera :</p>
+
+<pre><code>$ celery -A tasks worker -P solo
+...
+.&gt; concurrency: 4 (solo)
+...
+</code></pre>
+
+<p>La concurrency reste à 4 mais ne vous y fiez pas, le mode <strong>solo</strong> ne s&rsquo;en encombre pas et n&rsquo;exécutera qu&rsquo;une seule tâche à la fois.</p>
+
+<p>Là encore nous pouvons le vérifier via les processus en cours d&rsquo;exécution sur notre machine :</p>
+
+<pre><code>$ ps -A | grep -i celery
+92356 ttys000    0:01.13 /Users/ncrocfer/Dev/celery_pool/venv/bin/python3 /Users/ncrocfer/Dev/celery_pool/venv/bin/celery -A tasks worker -P solo
+</code></pre>
+
+<p>Hormis pour lancer des tests, ce mode pourra être utile dans le cas d&rsquo;un usage en environnement <em>containers</em>. En effet les comptes sont simples dans ce cas : <em>N</em> containers égal <em>N</em> tasks en parallèle.</p>
+
+<h2 id="mode-gevent-eventlet">Mode gevent &amp; eventlet</h2>
+
+<p>Là on arrive dans la partie intéressante :) A l&rsquo;inverse du mode <code>prefork</code> utile pour gérer des tâches <strong>CPU bound</strong>, ces deux modes vont nous permettre de gérer facilement les tâches dîtes <strong>IO bound</strong>.</p>
+
+<p>De telles tâches n&rsquo;effectuent pas de calculs lourds, et ne nécessitent donc pas un grand nombre de CPU puissants. En revanche elles peuvent être amenées à effectuer beaucoup de requêtes vers d&rsquo;autres systèmes : une API externe, une base de données, un site web, etc. Ici notre CPU n&rsquo;a pas grand chose à faire puisque nos tâches vont principalement attendre le retour de leurs requêtes.</p>
+
+<p>Je vous invite à vous renseigner sur la librairie <a href="https://docs.python.org/3/library/asyncio.html">Asyncio</a> qui expliquera tout ça mieux que moi.</p>
+
+<p>Dans l&rsquo;exemple ci-dessous notre worker pourra gérer 100 tâches en parallèle via le mode <code>gevent</code> :</p>
+
+<pre><code>$ celery -A tasks worker -P gevent -c 100
+...
+.&gt; concurrency: 100 (gevent)
+...
+</code></pre>
+
+<h1 id="la-pratique">La pratique</h1>
+
+<p>Trève de théorie, illustrons maintenant l&rsquo;utilisation des pool d&rsquo;exécution via un exemple.</p>
+
+<p>Nous souhaitons lancer plusieurs tâches en parallèle effectuant une requête vers une API externe. Cette API renvoie un nombre au hasard, et une fonction de callback est appelée afin d&rsquo;effectuer la somme de ces nombres. Certes cet exemple est basique mais il va nous permettre de mettre en évidence la puissance des pools d&rsquo;exécution dans Celery.</p>
+
+<p>L&rsquo;API tourne en locale, j&rsquo;ai utilisé <a href="https://sanic.readthedocs.io/en/latest/">Sanic</a> avec un timeout de 2 secondes <em>simulant</em> la latence d&rsquo;une API externe :</p>
+
+<pre><code class="language-python">$ cat app.py
+import random
+import asyncio
+
+from sanic import Sanic
+from sanic.response import json
+
+
+app = Sanic()
+
+
+@app.get(&quot;/&quot;)
+async def get_time(request):
+    await asyncio.sleep(2)
+    return json({&quot;number&quot;: random.randint(1, 10)})
+
+
+if __name__ == &quot;__main__&quot;:
+    app.run(host=&quot;0.0.0.0&quot;, port=8000)
+</code></pre>
+
+<p>Nos tâches sont elles-aussi très simples :</p>
+
+<pre><code class="language-python">$ cat tasks.py
+import requests
+from celery import Celery, chord
+
+
+app = Celery('tasks', broker='redis://localhost:6379/0', backend=&quot;redis://localhost:6379/1&quot;)
+
+
+@app.task
+def get_number():
+    resp = requests.get(&quot;http://localhost:8000&quot;)
+    return resp.json()[&quot;number&quot;]
+
+@app.task
+def sum_numbers(numbers):
+    return sum(numbers)
+
+
+sign = chord(
+    [get_number.si() for _ in range(5)],
+    sum_numbers.s()
+)
+</code></pre>
+
+<p>J&rsquo;utilise un chord afin de lancer plusieurs requêtes en parallèle. La fonction <code>sum_numbers</code> est ensuite lancée afin de calculer la somme totale des nombres.</p>
+
+<p>Le lancement peut s&rsquo;effectuer en une ligne :</p>
+
+<pre><code>$ python -c &quot;from tasks import sign; sign.delay()&quot;
+</code></pre>
+
+<p>Testons avec le pool d&rsquo;exécution par défaut (prefork) :</p>
+
+<pre><code>$ celery -A tasks worker --loglevel=INFO
+...
+[2020-01-26 19:30:48,852: INFO/MainProcess] Received task: tasks.get_number[5f2f8167-c667-4e83-b591-453e57b3a958]
+[2020-01-26 19:30:48,855: INFO/MainProcess] Received task: tasks.get_number[a333586b-c396-4b91-917f-3fbdfa6d30e8]
+[2020-01-26 19:30:48,860: INFO/MainProcess] Received task: tasks.get_number[88fa7cc0-2622-4053-8824-2f2d47c25a04]
+[2020-01-26 19:30:48,876: INFO/MainProcess] Received task: tasks.get_number[fa35004e-51b8-4f48-ad84-e02640ed9621]
+[2020-01-26 19:30:48,880: INFO/MainProcess] Received task: tasks.get_number[5ecb73c8-9ba5-4ebb-aaae-78e14908405a]
+[2020-01-26 19:30:50,915: INFO/ForkPoolWorker-2] Task tasks.get_number[5f2f8167-c667-4e83-b591-453e57b3a958] succeeded in 2.057117607037071s: 1
+[2020-01-26 19:30:50,915: INFO/ForkPoolWorker-3] Task tasks.get_number[a333586b-c396-4b91-917f-3fbdfa6d30e8] succeeded in 2.057576177001465s: 2
+[2020-01-26 19:30:50,920: INFO/ForkPoolWorker-1] Task tasks.get_number[88fa7cc0-2622-4053-8824-2f2d47c25a04] succeeded in 2.0558868430089206s: 2
+[2020-01-26 19:30:50,933: INFO/ForkPoolWorker-4] Task tasks.get_number[fa35004e-51b8-4f48-ad84-e02640ed9621] succeeded in 2.055466585967224s: 1
+[2020-01-26 19:30:52,972: INFO/ForkPoolWorker-2] Task tasks.get_number[5ecb73c8-9ba5-4ebb-aaae-78e14908405a] succeeded in 2.0525691980146803s: 10
+[2020-01-26 19:30:52,973: INFO/MainProcess] Received task: tasks.sum_numbers[605e4af4-229c-42a3-9be0-ce5daff79a0f]
+[2020-01-26 19:30:52,975: INFO/ForkPoolWorker-2] Task tasks.sum_numbers[605e4af4-229c-42a3-9be0-ce5daff79a0f] succeeded in 0.0006177640170790255s: 16
+</code></pre>
+
+<p>Les tâches sont toutes prises en compte en une seule fois par notre worker (rien à voir avec la notion de pool d&rsquo;exécution, il s&rsquo;agit ici du <strong>prefetch</strong>, en gros le nombre de tâches qu&rsquo;un worker peut se <em>réserver</em>).</p>
+
+<p>En revanche seules 4 tâches sont effectuées en même temps, il faudra attendre 2 secondes supplémentaires pour que la 5ème le soit également. Le workflow complet aura donc pris <strong>4 secondes</strong>.</p>
+
+<p>Testons maintenant avec le pool d&rsquo;exécution <strong>gevent</strong> :</p>
+
+<pre><code>$ celery -A tasks worker --loglevel=INFO -P gevent -c 100
+...
+[2020-01-26 19:35:12,151: INFO/MainProcess] Received task: tasks.get_number[04192b64-b71e-4e1c-8eb8-f86487c6b013]
+[2020-01-26 19:35:12,163: INFO/MainProcess] Received task: tasks.get_number[12d227b5-f0b1-4fd8-8b44-25e8d8fbc028]
+[2020-01-26 19:35:12,173: INFO/MainProcess] Received task: tasks.get_number[db7838f5-3543-414c-9816-7df62b13b65d]
+[2020-01-26 19:35:12,182: INFO/MainProcess] Received task: tasks.get_number[52f163d4-7d75-493a-a3ac-65122691b078]
+[2020-01-26 19:35:12,193: INFO/MainProcess] Received task: tasks.get_number[14537419-8710-4b32-bb13-6c884ff22dca]
+[2020-01-26 19:35:14,202: INFO/MainProcess] Task tasks.get_number[04192b64-b71e-4e1c-8eb8-f86487c6b013] succeeded in 2.048632029967848s: 6
+[2020-01-26 19:35:14,207: INFO/MainProcess] Task tasks.get_number[12d227b5-f0b1-4fd8-8b44-25e8d8fbc028] succeeded in 2.042411718983203s: 2
+[2020-01-26 19:35:14,208: INFO/MainProcess] Task tasks.get_number[14537419-8710-4b32-bb13-6c884ff22dca] succeeded in 2.0140742670046166s: 10
+[2020-01-26 19:35:14,209: INFO/MainProcess] Task tasks.get_number[db7838f5-3543-414c-9816-7df62b13b65d] succeeded in 2.03493124502711s: 6
+[2020-01-26 19:35:14,225: INFO/MainProcess] Task tasks.get_number[52f163d4-7d75-493a-a3ac-65122691b078] succeeded in 2.0403319080360234s: 9
+[2020-01-26 19:35:14,225: INFO/MainProcess] Received task: tasks.sum_numbers[043e87a0-4963-468a-9f17-7ffe93127fcd]
+[2020-01-26 19:35:14,227: INFO/MainProcess] Task tasks.sum_numbers[043e87a0-4963-468a-9f17-7ffe93127fcd] succeeded in 0.0006761000258848071s: 33
+</code></pre>
+
+<p>Ici les 5 tâches sont bien effectuées en même temps, le workflow aura donc mis <strong>2 secondes</strong>. Et encore je n&rsquo;ai lancé que 5 tâches en parallèle, n&rsquo;hésitez pas à augmenter ce nombre afin de constater par vous-même les résultats. On comprend bien la puissance de Gevent face à des tâches dédiées à de l&rsquo;IO Bound.</p>
+
+<h1 id="conclusion">Conclusion</h1>
+
+<p>Les pool d&rsquo;exécution ne sont pas beaucoup mis en avant dans la documentation Celery, hors comme vous le voyez il s&rsquo;agit d&rsquo;une configuration très simple à mettre en oeuvre afin de bénéficier de meilleurs performances.</p>
+
+<p>N&rsquo;hésitez surtout pas à utiliser les queues pour effectuer le routing de vos tâches IO bound et CPU bound. Les tâches gourmandes en CPU pourront être redirigées vers une queue <strong>cpu</strong> et les tâches gourmandes en IO bound vers une queue <strong>io</strong>.</p>
+
+<p>Il suffira alors de lancer 2 workers avec les bons arguments :</p>
+
+<pre><code>$ celery -A tasks worker -P gevent -c 100 -Q io
+$ celery -A tasks worker -P prefork -c 4 -Q cpu
+</code></pre>
+
+<p>Vous trouverez plus d&rsquo;info sur les queues <a href="https://docs.celeryproject.org/en/latest/userguide/routing.html">ici</a>.</p>
+
+<p>En espérant que cet article vous ait plus, n&rsquo;hésitez pas à me contacter sur <a href="https://twitter.com/ncrocfer">Twitter</a> si vous avez des questions ou des remarques :)</p>
+
+                    </div>
+                </section>
+                
                 <h1 class="content-subhead">27 Oct 2019, 23:44</h1>
                 <section class="post">
                     <header class="post-header">
@@ -1104,82 +1338,6 @@ Proto Recv-Q Send-Q Local Address           Foreign Address         State       
 tcp        0      0 127.0.0.1:5000          0.0.0.0:*               LISTEN      -
 root@caa036eb3980:/#
 </code></pre>
-                    </div>
-                </section>
-                
-                <h1 class="content-subhead">27 Sep 2015, 18:16</h1>
-                <section class="post">
-                    <header class="post-header">
-
-                        <a href="https://ncrocfer.github.io/posts/formater-du-json-dans-le-terminal/" class="post-title">Formater du JSON dans le terminal</a>
-
-                        <p class="post-meta">
-                            
-                            
-                        </p>
-                    </header>
-
-                    <div class="post-description">
-                        <p>Il m&rsquo;arrive de devoir lire un fichier JSON dans le terminal. Dans bien des cas malheureusement ce fichier n&rsquo;est pas formaté et la lecture est quasiment impossible.</p>
-
-<p></p>
-
-<p>Par exemple avec ce fichier <strong>customers.json</strong> :</p>
-
-<pre><code class="language-bash">$ more customers.json
-    [ { &quot;_id&quot;: &quot;56081479e15e4ab842a896e8&quot;, &quot;index&quot;: 0, &quot;guid&quot;: &quot;5a6b6434-e2c0-4c03-8103-a7009132a3c6&quot;, &quot;isActive&quot;: false, &quot;balance&quot;: &quot;$3,324.04&quot;, &quot;picture&quot;: &quot;http://placehold.it/32x32&quot;, &quot;age&quot;: 30, &quot;eyeColor&quot;: &quot;brown&quot;, &quot;name&quot;: &quot;Joan Maldonado&quot;, &quot;gender&quot;: &quot;female&quot;, &quot;company&quot;: &quot;PLASMOS&quot;, &quot;email&quot;: &quot;joanmaldonado@plasmos.com&quot;, &quot;phone&quot;: &quot;+1 (882) 446-3244&quot;, &quot;address&quot;: &quot;904 Will Place, Vincent, New Hampshire, 791&quot;, &quot;about&quot;: &quot;Enim velit reprehenderit aliquip nulla sint. Commodo et magna pariatur Lorem. Ut esse ut aliquip nulla et labore aute veniam qui ex et. Do proident elit occaecat id enim id ad fugiat nostrud. Amet non minim cupidatat sint voluptate ullamco. Consequat commodo sunt elit mollit consequat labore nisi excepteur sint ex consequat.\r\n&quot;, &quot;registered&quot;: &quot;2014-07-22T10:21:02 -02:00&quot;, &quot;latitude&quot;: 20.049304, &quot;longitude&quot;: -116.525111, &quot;tags&quot;: [ &quot;in&quot;, &quot;non&quot;, &quot;esse&quot;, &quot;Lorem&quot;, &quot;dolor&quot;, &quot;id&quot;, &quot;officia&quot; ], &quot;friends&quot;: [ { &quot;id&quot;: 0, &quot;name&quot;: &quot;Gardner Reese&quot; }, { &quot;id&quot;: 1, &quot;name&quot;: &quot;Iva Flores&quot; }, { &quot;id&quot;: 2, &quot;name&quot;: &quot;Walters Young&quot; } ], &quot;greeting&quot;: &quot;Hello, Joan Maldonado! You have 3 unread messages.&quot;, &quot;favoriteFruit&quot;: &quot;apple&quot; }, { &quot;_id&quot;: &quot;56081479db98561a62a7679d&quot;, &quot;index&quot;: 1, &quot;guid&quot;: &quot;6109f36b-c17b-4a7d-9c3d-82b5afed5b08&quot;, &quot;isActive&quot;: false, &quot;balance&quot;: &quot;$2,768.70&quot;, &quot;picture&quot;: &quot;http://placehold.it/32x32&quot;, &quot;age&quot;: 26, &quot;eyeColor&quot;: &quot;green&quot;, &quot;name&quot;: &quot;Tisha Patel&quot;, &quot;gender&quot;: &quot;female&quot;, &quot;company&quot;: &quot;KIOSK&quot;, &quot;email&quot;: &quot;tishapatel@kiosk.com&quot;, &quot;phone&quot;: &quot;+1 (860) 531-3279&quot;, &quot;address&quot;: &quot;500 Caton Place, Rockingham, Kansas, 7867&quot;, &quot;about&quot;: &quot;Magna do ullamco commodo Lorem ullamco eu sit enim dolor. Enim est eiusmod irure commodo ad duis veniam officia dolor incididunt veniam in proident. Magna eiusmod cillum sit nisi ullamco nostrud velit laboris sint enim ad voluptate nulla quis. Voluptate consectetur excepteur eiusmod sunt. Labore officia ea laborum quis tempor magna laboris nostrud aute adipisicing non.\r\n&quot;, &quot;registered&quot;: &quot;2015-08-23T12:53:27 -02:00&quot;, &quot;latitude&quot;: -40.008583, &quot;longitude&quot;: 94.809866, &quot;tags&quot;: [ &quot;dolore&quot;, &quot;et&quot;, &quot;laborum&quot;, &quot;occaecat&quot;, &quot;aute&quot;, &quot;laboris&quot;, &quot;officia&quot; ], &quot;friends&quot;: [ { &quot;id&quot;: 0, &quot;name&quot;: &quot;Phyllis Mccullough&quot; }, { &quot;id&quot;: 1, &quot;name&quot;: &quot;Mercedes Bullock&quot; }, { &quot;id&quot;: 2, &quot;name&quot;: &quot;Virginia Witt&quot; } ], &quot;greeting&quot;: &quot;Hello, Tisha Patel! You have 8 unread messages.&quot;, &quot;favoriteFruit&quot;: &quot;apple&quot; }, { &quot;_id&quot;: &quot;5608147988cc9bbeebd14516&quot;, &quot;index&quot;: 2, &quot;guid&quot;: &quot;f0bb0639-5d2a-47e1-883d-21fb53fb3d4c&quot;, &quot;isActive&quot;: true, &quot;balance&quot;: &quot;$2,235.78&quot;, &quot;picture&quot;: &quot;http://placehold.it/32x32&quot;, &quot;age&quot;: 23, &quot;eyeColor&quot;: &quot;brown&quot;, &quot;name&quot;: &quot;Elvia Gaines&quot;, &quot;gender&quot;: &quot;female&quot;, &quot;company&quot;: &quot;GYNK&quot;, &quot;email&quot;: &quot;elviagaines@gynk.com&quot;, &quot;phone&quot;: &quot;+1 (991) 513-2225&quot;, &quot;address&quot;: &quot;612 Canton Court, Grapeview, Michigan, 1411&quot;, &quot;about&quot;: &quot;Ipsum incididunt ad occaecat occaecat ipsum adipisicing sunt veniam aliquip commodo. Ad mollit elit anim nulla dolor aute elit qui tempor cupidatat anim nulla incididunt. Lorem ex non et aute laborum. Et esse qui consequat quis labore. Irure commodo incididunt Lorem magna ullamco. Reprehenderit consequat tempor cupidatat eiusmod magna in laboris adipisicing.\r\n&quot;, &quot;registered&quot;: &quot;2015-08-13T05:05:02 -02:00&quot;, &quot;latitude&quot;: -72.222724, &quot;longitude&quot;: 56.951741, &quot;tags&quot;: [ &quot;ullamco&quot;, &quot;cillum&quot;, &quot;excepteur&quot;, &quot;proident&quot;, &quot;do&quot;, &quot;do&quot;, &quot;voluptate&quot; ], &quot;friends&quot;: [ { &quot;id&quot;: 0, &quot;name&quot;: &quot;Jarvis Lambert&quot; }, { &quot;id&quot;: 1, &quot;name&quot;: &quot;Carla Ferguson&quot; }, { &quot;id&quot;: 2, &quot;name&quot;: &quot;Cline Combs&quot; } ], &quot;greeting&quot;: &quot;Hello, Elvia Gaines! You have 7 unread messages.&quot;, &quot;favoriteFruit&quot;: &quot;strawberry&quot; }, { &quot;_id&quot;: &quot;56081479a320a31282066ffb&quot;, &quot;index&quot;: 3, &quot;guid&quot;: &quot;11d34616-a325-4326-a4dd-260f26950ca8&quot;, &quot;isActive&quot;: true, &quot;balance&quot;: &quot;$2,083.11&quot;, &quot;picture&quot;: &quot;http://placehold.it/32x32&quot;, &quot;age&quot;: 24, &quot;eyeColor&quot;: &quot;blue&quot;, &quot;name&quot;: &quot;Sallie Barr&quot;, &quot;gender&quot;: &quot;female&quot;, &quot;company&quot;: &quot;TRANSLINK&quot;, &quot;email&quot;: &quot;salliebarr@translink.com&quot;, &quot;phone&quot;: &quot;+1 (911) 454-2623&quot;, &quot;address&quot;: &quot;714 Doughty Street, Grahamtown, North Dakota, 4512&quot;, &quot;about&quot;: &quot;Non incididunt do anim culpa adipisicing nostrud ullamco ea tempor. Enim duis quis pariatur excepteur ut voluptate et amet ut sint voluptate. Consectetur id irure mollit adipisicing veniam eiusmod veniam occaecat. Dolor consequat nulla dolor id velit eu irure. Cillum velit ad sunt fugiat officia cupidatat fugiat et consectetur amet tempor. Duis fugiat ipsum tempor ipsum fugiat nisi pariatur dolor cupidatat adipisicing ea nostrud velit. Eu nulla laborum fugiat ipsum occaecat non est quis do voluptate minim et officia.\r\n&quot;, &quot;registered&quot;: &quot;2014-08-10T03:51:55 -02:00&quot;, &quot;latitude&quot;: -74.14838, &quot;longitude&quot;: 24.023487, &quot;tags&quot;: [ &quot;elit&quot;, &quot;proident&quot;, &quot;aliquip&quot;, &quot;culpa&quot;, &quot;dolor&quot;, &quot;cupidatat&quot;, &quot;do&quot; ], &quot;friends&quot;: [ { &quot;id&quot;: 0, &quot;name&quot;: &quot;Aida Scott&quot; }, { &quot;id&quot;: 1, &quot;name&quot;: &quot;Cash Gillespie&quot; }, { &quot;id&quot;: 2, &quot;name&quot;: &quot;Bryan Hoover&quot; } ], &quot;greeting&quot;: &quot;Hello, Sallie Barr! You have 4 unread messages.&quot;, &quot;favoriteFruit&quot;: &quot;apple&quot; }, { &quot;_id&quot;: &quot;56081479a03f0f3f3f359e7b&quot;, &quot;index&quot;: 4, &quot;guid&quot;: &quot;d9bfb305-7c94-43ec-974a-12addf238468&quot;, &quot;isActive&quot;: false, &quot;balance&quot;: &quot;$3,170.81&quot;, &quot;picture&quot;: &quot;http://placehold.it/32x32&quot;, &quot;age&quot;: 39, &quot;eyeColor&quot;: &quot;brown&quot;, &quot;name&quot;: &quot;Frances Martinez&quot;, &quot;gender&quot;: &quot;female&quot;, &quot;company&quot;: &quot;CODACT&quot;, &quot;email&quot;: &quot;francesmartinez@codact.com&quot;, &quot;phone&quot;: &quot;+1 (887) 504-2517&quot;, &quot;address&quot;: &quot;609 Balfour Place, Emory, Colorado, 6617&quot;, &quot;about&quot;: &quot;Incididunt consequat deserunt reprehenderit eu laborum aliquip duis non fugiat mollit fugiat. Velit do eiusmod fugiat consequat aliquip fugiat anim mollit aliquip cupidatat cupidatat Lorem reprehenderit est. Dolore voluptate culpa labore minim. Commodo sunt commodo sint in exercitation aliquip aute aute sunt deserunt ea occaecat est irure. Minim aliqua proident est excepteur. Proident minim deserunt dolore adipisicing aliquip ipsum enim est consectetur amet fugiat excepteur ex. Tempor non officia exercitation ipsum ipsum est reprehenderit reprehenderit pariatur nulla fugiat reprehenderit consequat mollit.\r\n&quot;, &quot;registered&quot;: &quot;2014-07-18T08:39:15 -02:00&quot;, &quot;latitude&quot;: -11.888415, &quot;longitude&quot;: 150.058245, &quot;tags&quot;: [ &quot;enim&quot;, &quot;culpa&quot;, &quot;deserunt&quot;, &quot;est&quot;, &quot;elit&quot;, &quot;veniam&quot;, &quot;voluptate&quot; ], &quot;friends&quot;: [ { &quot;id&quot;: 0, &quot;name&quot;: &quot;Mooney Kelly&quot; }, { &quot;id&quot;: 1, &quot;name&quot;: &quot;Maddox Mills&quot; }, { &quot;id&quot;: 2, &quot;name&quot;: &quot;Olsen Perkins&quot; } ], &quot;greeting&quot;: &quot;Hello, Frances Martinez! You have 1 unread messages.&quot;, &quot;favoriteFruit&quot;: &quot;strawberry&quot; }, { &quot;_id&quot;: &quot;56081479d6f7624b753fbd24&quot;, &quot;index&quot;: 5, &quot;guid&quot;: &quot;f6f40203-43b5-46b4-90ef-4e03ac0410d9&quot;, &quot;isActive&quot;: true, &quot;balance&quot;: &quot;$2,787.96&quot;, &quot;picture&quot;: &quot;http://placehold.it/32x32&quot;, &quot;age&quot;: 34, &quot;eyeColor&quot;: &quot;green&quot;, &quot;name&quot;: &quot;Houston Kerr&quot;, &quot;gender&quot;: &quot;male&quot;, &quot;company&quot;: &quot;INCUBUS&quot;, &quot;email&quot;: &quot;houstonkerr@incubus.com&quot;, &quot;phone&quot;: &quot;+1 (912) 474-3368&quot;, &quot;address&quot;: &quot;802 Preston Court, Cataract, Kentucky, 5816&quot;, &quot;about&quot;: &quot;Eu amet nulla veniam nostrud magna id. Veniam elit qui exercitation esse esse excepteur reprehenderit ullamco et. Dolore officia Lorem pariatur tempor dolore Lorem quis enim ad aliqua. Sit sunt culpa aute consequat fugiat. Magna minim duis ea cillum quis duis proident tempor deserunt velit cupidatat nulla. Culpa eiusmod consectetur eiusmod labore.\r\n&quot;, &quot;registered&quot;: &quot;2014-10-12T09:08:48 -02:00&quot;, &quot;latitude&quot;: 33.730743, &quot;longitude&quot;: -17.213511, &quot;tags&quot;: [ &quot;sunt&quot;, &quot;dolor&quot;, &quot;sit&quot;, &quot;sit&quot;, &quot;eu&quot;, &quot;ad&quot;, &quot;ex&quot; ], &quot;friends&quot;: [ { &quot;id&quot;: 0, &quot;name&quot;: &quot;Marguerite Skinner&quot; }, { &quot;id&quot;: 1, &quot;name&quot;: &quot;Webster Sykes&quot; }, { &quot;id&quot;: 2, &quot;name&quot;: &quot;Wendy Campos&quot; } ], &quot;greeting&quot;: &quot;Hello, Houston Kerr! You have 5 unread messages.&quot;, &quot;favoriteFruit&quot;: &quot;strawberry&quot; } ]
-</code></pre>
-
-<p>Pour pallier à ce problème une solution est d&rsquo;utiliser le module JSON de Python :</p>
-
-<pre><code class="language-bash">$ python -m json.tool customers.json
-[
-    {
-        &quot;_id&quot;: &quot;56081479e15e4ab842a896e8&quot;,
-        &quot;about&quot;: &quot;Enim velit reprehenderit aliquip nulla sint. Commodo et magna pariatur Lorem. Ut esse ut aliquip nulla et labore aute veniam qui ex et. Do proident el
-it occaecat id enim id ad fugiat nostrud. Amet non minim cupidatat sint voluptate ullamco. Consequat commodo sunt elit mollit consequat labore nisi excepteur sint ex co
-nsequat.\r\n&quot;,
-        &quot;address&quot;: &quot;904 Will Place, Vincent, New Hampshire, 791&quot;,
-        &quot;age&quot;: 30,
-        &quot;balance&quot;: &quot;$3,324.04&quot;,
-        &quot;company&quot;: &quot;PLASMOS&quot;,
-        &quot;email&quot;: &quot;joanmaldonado@plasmos.com&quot;,
-        &quot;eyeColor&quot;: &quot;brown&quot;,
-        &quot;favoriteFruit&quot;: &quot;apple&quot;,
-        ...
-    }
-]
-</code></pre>
-
-<p>En revanche la coloration syntaxique n&rsquo;est pas prise en compte (bon ici le résultat est coloré, mais ce n&rsquo;est pas le cas dans le terminal). Pour cela on peut utiliser <strong>jq</strong>, qui est un parser complet de JSON intégrant une tonne d&rsquo;options. Nous allons simplement l&rsquo;utiliser pour formater et colorer notre fichier :</p>
-
-<pre><code class="language-bash">$ jq &quot;.&quot; customers.json
-[
-  {
-    &quot;favoriteFruit&quot;: &quot;apple&quot;,
-    &quot;greeting&quot;: &quot;Hello, Joan Maldonado! You have 3 unread messages.&quot;,
-    &quot;friends&quot;: [
-      {
-        &quot;name&quot;: &quot;Gardner Reese&quot;,
-        &quot;id&quot;: 0
-      },
-      {
-        &quot;name&quot;: &quot;Iva Flores&quot;,
-        &quot;id&quot;: 1
-      },
-      {
-        &quot;name&quot;: &quot;Walters Young&quot;,
-        &quot;id&quot;: 2
-      }
-    ],
-    ...
-  }
-]
-</code></pre>
-
-<p>Le &ldquo;.&rdquo; est l&rsquo;expression de base de <strong>jq</strong> qui permet de renvoyer le résultat sans le modifier.</p>
-
-<p>Bien sûr je ne montre ici que l&rsquo;utilisation basique de l&rsquo;outil. Comme je le disais avant il existe énormément d&rsquo;options et je vous invite à lire la <a href="https://stedolan.github.io/jq/manual/">doc</a> pour en savoir plus.</p>
                     </div>
                 </section>
                 

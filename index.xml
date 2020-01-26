@@ -6,10 +6,20 @@
     <description>Recent content on Nicolas Crocfer</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>fr-FR</language>
-    <lastBuildDate>Sun, 27 Oct 2019 23:44:30 +0100</lastBuildDate>
+    <lastBuildDate>Sun, 12 Jan 2020 13:25:39 +0100</lastBuildDate>
     
 	<atom:link href="https://ncrocfer.github.io/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Celery : l&#39;importance du pool d&#39;exécution</title>
+      <link>https://ncrocfer.github.io/posts/celery-importance-pool-execution/</link>
+      <pubDate>Sun, 12 Jan 2020 13:25:39 +0100</pubDate>
+      
+      <guid>https://ncrocfer.github.io/posts/celery-importance-pool-execution/</guid>
+      <description>En tant que dev nous sommes régulièrement amenés à devoir exécuter des tâches en arrière-plan. La plupart du temps il s&amp;rsquo;agira de répondre à une action de l&amp;rsquo;utilisateur (call d&amp;rsquo;API, click sur un bouton&amp;hellip;), parfois nous aurons besoin de lancer une tâche de manière périodique.
+Dans les 2 cas l&amp;rsquo;objectif est de ne pas bloquer le processus principal. En effet je vous laisse imaginer les pertes de performance si, au moment d&amp;rsquo;un POST sur votre API, votre application se chargeait d&amp;rsquo;exécuter elle-même une tâche lourde et très longue.</description>
+    </item>
     
     <item>
       <title>Retour d&#39;experience sur le lancement d&#39;un projet opensource</title>
