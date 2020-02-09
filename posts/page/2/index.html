@@ -80,6 +80,69 @@
             
             <div class="posts">
                 
+                <h1 class="content-subhead">24 Nov 2015, 23:18</h1>
+                <section class="post">
+                    <header class="post-header">
+
+                        <a href="https://ncrocfer.github.io/posts/netstat-sur-debian-8-jessie/" class="post-title">netstat sur Debian 8 Jessie</a>
+
+                        <p class="post-meta">
+                            
+                            
+                        </p>
+                    </header>
+
+                    <div class="post-description">
+                        <p>Lorsqu&rsquo;on utilise docker pour développer, on ne sait pas toujours sur quel OS on va tomber. Tout dépend du choix du créateur de l&rsquo;image : on tombera parfois sur du Debian, parfois sur du Ubuntu, parfois encore sur du CentOS.</p>
+
+<p></p>
+
+<p>En revanche je me suis rendu compte que la plupart (la totalité ?) des images officielles proposées par Docker étaient quant à elles basées sur Debian. Même si parfois elles diffèrent de version (exemple avec l&rsquo;image <a href="https://github.com/docker-library/redis/blob/8929846148513a1e35e4212003965758112f8b55/3.0/Dockerfile">Redis</a> sous Wheezy et l&rsquo;image <a href="https://github.com/docker-library/rabbitmq/blob/60e5665854131f7fcb9ab0285d7d52ac932efb43/Dockerfile">RabbitMQ</a> sous Jessie), on reste quand même sur du Debian. Et l&rsquo;image officielle Python ne fait pas exception à cette règle.</p>
+
+<p>Du coup pas de netstat de base pour tester si votre gunicorn écoute sur le bon port ou s&rsquo;il est accessible sur localhost ou sur 0.0.0.0 (open bar).</p>
+
+<p>Alors si comme moi vous avez bêtement tenté de rechercher le paquet netstat et que vous êtes tombé sur ça :</p>
+
+<pre><code class="language-bash">ncrocfer@home:~$ docker run -it python:3.4 /bin/bash
+root@caa036eb3980:/# apt-get update
+...
+...
+root@caa036eb3980:/# apt-cache search netstat
+libparse-netstat-perl - module to parse the output of the &quot;netstat&quot; command
+netstat-nat - tool that display NAT connections
+root@caa036eb3980:/#
+</code></pre>
+
+<p>Eh bien sachez que l&rsquo;outil se situe dans le paquet <strong>net-tools</strong> :</p>
+
+<pre><code class="language-bash">root@caa036eb3980:/# apt-get install net-tools
+</code></pre>
+
+<p>Vous pouvez maintenant lancer vos services et vérifiez leurs connexions :</p>
+
+<pre><code class="language-bash">root@caa036eb3980:/# pip install flask
+root@caa036eb3980:/# cat &gt; app.py &lt;&lt;- EOM
+&gt; from flask import Flask
+&gt; app = Flask(__name__)
+&gt;
+&gt; @app.route(&quot;/&quot;)
+&gt; def hello():
+&gt;     return &quot;Hello World!&quot;
+&gt;
+&gt; if __name__ == &quot;__main__&quot;:
+&gt;     app.run()
+&gt; EOM
+root@caa036eb3980:/# python app.py &amp;
+[1] 104
+root@caa036eb3980:/# netstat -plnt
+Active Internet connections (only servers)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name
+tcp        0      0 127.0.0.1:5000          0.0.0.0:*               LISTEN      -
+root@caa036eb3980:/#
+</code></pre>
+                    </div>
+                </section>
+                
                 <h1 class="content-subhead">27 Sep 2015, 18:16</h1>
                 <section class="post">
                     <header class="post-header">

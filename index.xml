@@ -6,10 +6,20 @@
     <description>Recent content on Nicolas Crocfer</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>fr-FR</language>
-    <lastBuildDate>Sun, 12 Jan 2020 13:25:39 +0100</lastBuildDate>
+    <lastBuildDate>Sun, 09 Feb 2020 13:04:09 +0100</lastBuildDate>
     
 	<atom:link href="https://ncrocfer.github.io/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Celery : utiliser le filesystem comme broker et result backend</title>
+      <link>https://ncrocfer.github.io/posts/celery-utiliser-filesystem/</link>
+      <pubDate>Sun, 09 Feb 2020 13:04:09 +0100</pubDate>
+      
+      <guid>https://ncrocfer.github.io/posts/celery-utiliser-filesystem/</guid>
+      <description>Lorsqu&amp;rsquo;on utilise Celery en production il est d&amp;rsquo;usage d&amp;rsquo;utiliser un broker robuste comme RabbitMQ. Dans le cas où nos tâches utilisent un canvas tel que chord il faudra également penser à configurer la connection vers un result backend afin de stocker le résultat des tâches. On pourra par exemple utiliser Redis.
+Mais avant la mise en production il y a l&amp;rsquo;étape du développement des tâches. Et même si l&amp;rsquo;installation d&amp;rsquo;un Redis ou d&amp;rsquo;un RabbitMQ est assez simple, j&amp;rsquo;ai pu remarqué par le passé que ces dépendances fortes pouvaient parfois être un frein à l&amp;rsquo;adoption de Celery.</description>
+    </item>
     
     <item>
       <title>Celery : l&#39;importance du pool d&#39;exécution</title>

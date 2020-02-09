@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Celery : utiliser le filesystem comme broker et result backend &middot; Nicolas Crocfer</title>
+
+    <meta name="description" content="">
+
+    <meta name="generator" content="Hugo 0.42.2" />
+    <meta name="twitter:card" content="summary">
+    
+    <meta name="twitter:title" content="Celery : utiliser le filesystem comme broker et result backend &middot; Nicolas Crocfer">
+    <meta name="twitter:description" content="">
+
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Celery : utiliser le filesystem comme broker et result backend &middot; Nicolas Crocfer">
+    <meta property="og:description" content="">
+
+    <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Oxygen:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/pure-min.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/grids-responsive-min.css">
+
+    <link rel="stylesheet" href="https://ncrocfer.github.io/css/all.min.css">
+    <link rel="stylesheet" href="https://ncrocfer.github.io/css/flexboxgrid.min.css">
+    <link rel="stylesheet" href="https://ncrocfer.github.io/css/custom.css">
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <link rel="alternate" type="application/rss+xml" title="Nicolas Crocfer" href="https://ncrocfer.github.io/index.xml" />
+</head>
+<body>
+
+
+
+<div id="layout" class="pure-g">
+    <div class="sidebar pure-u-1 pure-u-md-1-4">
+    <div class="header">
+        <hgroup>
+            <h1 class="brand-title"><a href="https://ncrocfer.github.io">Nicolas Crocfer</a></h1>
+            <h2 class="brand-tagline"> Python Developer </h2>
+        </hgroup>
+
+        <nav class="nav">
+            <ul class="nav-list">
+                
+                <li class="nav-item">
+                    <a class="pure-button" href="https://twitter.com/ncrocfer">
+                        <i class="fa fa-twitter"></i> Twitter
+                    </a>
+                </li>
+                
+                
+                <li class="nav-item">
+                    <a class="pure-button" href="https://github.com/ncrocfer">
+                        <i class="fa fa-github-alt"></i> Github
+                    </a>
+                </li>
+                
+                
+                
+                <li class="nav-item">
+                    <a class="pure-button" href="https://www.linkedin.com/in/nicolascrocfer">
+                        <i class="fa fa-linkedin"></i> LinkedIn
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="pure-button" href="https://ncrocfer.github.io/index.xml">
+                        <i class="fa fa-rss"></i> rss
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+    <div class="content pure-u-1 pure-u-md-3-4">
+        <div>
+            
+            <div class="posts">
+                <h1 class="content-subhead">09 Feb 2020, 13:04</h1>
+                <section class="post">
+                    <header class="post-header">
+
+                        <a href="https://ncrocfer.github.io/posts/celery-utiliser-filesystem/" class="post-title">Celery : utiliser le filesystem comme broker et result backend</a>
+
+                        <p class="post-meta">
+                            
+                            
+                        </p>
+                    </header>
+                    
+                    <div class="post-description">
+                        <p>Lorsqu&rsquo;on utilise Celery en production il est d&rsquo;usage d&rsquo;utiliser un <strong>broker</strong> robuste comme RabbitMQ. Dans le cas où nos tâches utilisent un canvas tel que <code>chord</code> il faudra également penser à configurer la connection vers un <strong>result backend</strong> afin de stocker le résultat des tâches. On pourra par exemple utiliser Redis.</p>
+
+<p>Mais avant la mise en production il y a l&rsquo;étape du développement des tâches. Et même si l&rsquo;installation d&rsquo;un Redis ou d&rsquo;un RabbitMQ est assez simple, j&rsquo;ai pu remarqué par le passé que ces dépendances fortes pouvaient parfois être un frein à l&rsquo;adoption de Celery.</p>
+
+<p>Hors il faut savoir que Celery est basé sur la librairie <a href="https://github.com/celery/kombu">Kombu</a>, utilisée pour transmettre des messages d&rsquo;un producer à un consumer. Et la bonne nouvelle est que Kombu <a href="https://kombu.readthedocs.io/en/latest/_modules/kombu/transport/filesystem.html">supporte le filesystem</a> comme mode de transport !</p>
+
+<p>Ce qui signifie qu&rsquo;en configurant Celery on peut facilement s&rsquo;abstraire de ces dépendances :</p>
+
+<pre><code class="language-python">from celery import Celery
+
+app = Celery('tasks')
+app.conf.update({
+    # Configuration du broker
+    &quot;broker_url&quot;: &quot;filesystem://&quot;,
+    &quot;broker_transport_options&quot;: {
+        &quot;data_folder_in&quot;: &quot;/tmp/out&quot;,
+        &quot;data_folder_out&quot;: &quot;/tmp/out&quot;,
+    },
+
+    # Configuration du result backend
+    &quot;result_backend&quot;: &quot;file:///tmp/result&quot;,
+})
+</code></pre>
+
+<p>Comme vous le voyez c&rsquo;est très simple :</p>
+
+<ul>
+<li>on indique via le <code>broker_url</code> que nous souhaitons utiliser le système de fichiers,</li>
+<li>puis on transmet à Kombu le dossier dans lequel les messages seront stockés.</li>
+</ul>
+
+<p>Evidemment les clés <code>data_folder_in</code> et <code>data_folder_out</code> doivent être les mêmes, sinon vos producers écriront leurs messages dans un dossier et vos consumers tenteront de les lire ailleurs.</p>
+
+<p>Et comme Celery <a href="https://docs.celeryproject.org/en/latest/internals/reference/celery.backends.filesystem.html">supporte par défaut</a> le filesystem comme backend, sa configuration peut se faire via la clé <code>result_backend</code>.</p>
+
+<p>Il est important que les dossiers existent avant de lancer Celery, voici donc un petit snippet très simple qui les créera pour vous sous un dossier <code>.celery</code> du répertoire courant :</p>
+
+<pre><code class="language-python"># tasks.py
+import os
+from celery import Celery
+
+OUT_DIR = os.path.join(os.getcwd(), &quot;.celery/out&quot;)
+RESULT_DIR = os.path.join(os.getcwd(), &quot;.celery/result&quot;)
+
+# Create folders if they don't exist
+for dir in [OUT_DIR, RESULT_DIR]:
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+
+
+app = Celery('tasks')
+app.conf.update({
+    &quot;broker_url&quot;: &quot;filesystem://&quot;,
+    &quot;broker_transport_options&quot;: {
+        &quot;data_folder_in&quot;: OUT_DIR,
+        &quot;data_folder_out&quot;: OUT_DIR,
+    },
+    &quot;result_backend&quot;: f&quot;file://{RESULT_DIR}&quot;,
+})
+
+@app.task
+def tsum(numbers):
+    return sum(numbers)
+</code></pre>
+
+<p>On peut tester en lançant un simple chord :</p>
+
+<pre><code>In [1]: from tasks import tsum
+
+In [2]: from celery import chord
+
+In [3]: chord(
+   ...:     [tsum.si([1, 2]), tsum.si([3, 4])],
+   ...:     tsum.s()
+   ...: ).delay()
+Out[3]: &lt;AsyncResult: 11422611-c389-4020-9358-ca485b14d65d&gt;
+</code></pre>
+
+<p>Puis en visualisant les résultats du worker :</p>
+
+<pre><code>$ celery@LAPTOP v4.4.0 (cliffs)
+
+Darwin-17.7.0-x86_64-i386-64bit 2020-02-09 14:11:36
+
+[config]
+.&gt; app:         tasks:0x10605a8d0
+.&gt; transport:   filesystem://localhost//
+.&gt; results:     file:///Users/ncrocfer/Dev/.celery/result
+.&gt; concurrency: 4 (prefork)
+.&gt; task events: OFF (enable -E to monitor tasks in this worker)
+
+[queues]
+.&gt; celery           exchange=celery(direct) key=celery
+
+
+[tasks]
+  . tasks.tsum
+
+[2020-02-09 14:11:36,645: INFO/MainProcess] Connected to filesystem://localhost//
+[2020-02-09 14:11:36,677: INFO/MainProcess] celery@LAPTOP ready.
+[2020-02-09 14:11:36,682: INFO/MainProcess] Received task: celery.chord_unlock[71b7898d-b3b4-4689-9f4b-ebbe2e96cb1d]  ETA:[2020-02-09 13:10:35.235858+00:00]
+[2020-02-09 14:11:36,687: INFO/MainProcess] Received task: tasks.tsum[39a3728b-ee9a-44f8-b661-97e20e74c72e]
+[2020-02-09 14:11:36,694: INFO/MainProcess] Received task: tasks.tsum[e79e3917-1c80-4366-adcc-23b601f38836]
+[2020-02-09 14:11:36,700: INFO/ForkPoolWorker-1] Task tasks.tsum[39a3728b-ee9a-44f8-b661-97e20e74c72e] succeeded in 0.005183988017961383s: 3
+[2020-02-09 14:11:36,705: INFO/ForkPoolWorker-2] Task tasks.tsum[e79e3917-1c80-4366-adcc-23b601f38836] succeeded in 0.005367834935896099s: 7
+[2020-02-09 14:11:37,737: INFO/ForkPoolWorker-3] Task celery.chord_unlock[71b7898d-b3b4-4689-9f4b-ebbe2e96cb1d] succeeded in 0.05950633704196662s: None
+[2020-02-09 14:11:38,711: INFO/MainProcess] Received task: tasks.tsum[11422611-c389-4020-9358-ca485b14d65d]
+[2020-02-09 14:11:38,719: INFO/ForkPoolWorker-4] Task tasks.tsum[11422611-c389-4020-9358-ca485b14d65d] succeeded in 0.0034185299882665277s: 10
+</code></pre>
+
+<p>Evidemment cette configuration n&rsquo;est à utiliser qu&rsquo;en mode <em>développement</em>, je vous conseille fortement de passer sous un autre broker lorsque vous passerez vos tâches en prod :)</p>
+
+                    </div>
+                    
+                </section>
+            </div>
+            <div class="footer">
+    <div class="pure-menu pure-menu-horizontal pure-menu-open">
+        <ul>
+            <li>Powered by <a class="hugo" href="https://gohugo.io/" target="_blank">hugo</a></li>
+        </ul>
+    </div>
+</div>
+<script src="https://ncrocfer.github.io/js/all.min.js"></script>
+
+        </div>
+    </div>
+</div>
+
+
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-65778407-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+
+</body>
+</html>
