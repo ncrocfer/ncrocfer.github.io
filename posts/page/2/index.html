@@ -80,6 +80,54 @@
             
             <div class="posts">
                 
+                <h1 class="content-subhead">27 Nov 2015, 00:10</h1>
+                <section class="post">
+                    <header class="post-header">
+
+                        <a href="https://ncrocfer.github.io/posts/installer-python-3-5-1rc1/" class="post-title">Installer Python 3 5 1rc1</a>
+
+                        <p class="post-meta">
+                            
+                            
+                        </p>
+                    </header>
+
+                    <div class="post-description">
+                        <p>La version 3.5.1rc1 de Python est sortie cette semaine, incluant <a href="https://docs.python.org/3.5/whatsnew/changelog.html#python-3-5-1-release-candidate-1">de nombreuses corrections</a>.</p>
+
+<p>Voici comment l&rsquo;installer si vous souhaitez la tester. Sur mon laptop j&rsquo;ai un répertoire dans lequel je place les sources des différentes versions de Python (<strong>~/dev/python/src</strong>), et un autre dans lequel je compile les binaires (<strong>~/dev/python/bin</strong>).</p>
+
+<p></p>
+
+<p>On commence par télécharger les sources :</p>
+
+<pre><code class="language-bash">ncrocfer@home:~$ cd ~/dev/python/src
+ncrocfer@home:~/dev/python/src$ wget https://www.python.org/ftp/python/3.5.1/Python-3.5.1rc1.tgz
+ncrocfer@home:~/dev/python/src$ tar xzvf Python-3.5.1rc1.tgz
+ncrocfer@home:~/dev/python/src$ cd Python-3.5.1rc1/
+</code></pre>
+
+<p>On compile ensuite les sources, en choisissant le répertoire de destination souhaité :</p>
+
+<pre><code class="language-bash">ncrocfer@home:~/dev/python/src/Python-3.5.1rc1$ ./configure --prefix=&quot;/home/ncrocfer/dev/python/bin/3.5.1rc1/&quot;
+ncrocfer@home:~/dev/python/src/Python-3.5.1rc1$ make
+ncrocfer@home:~/dev/python/src/Python-3.5.1rc1$ make install
+</code></pre>
+
+<p>Vous pouvez désormais tester Python 3.5.1rc1 :</p>
+
+<pre><code class="language-bash">ncrocfer@home:~$ cd ~/dev/python/bin/3.5.1rc1/bin/
+ncrocfer@home:~/dev/python/bin/3.5.1rc1/bin$ ./python3
+Python 3.5.1rc1 (default, Nov 27 2015, 00:32:21)
+[GCC 4.8.4] on linux
+Type &quot;help&quot;, &quot;copyright&quot;, &quot;credits&quot; or &quot;license&quot; for more information.
+&gt;&gt;&gt;
+</code></pre>
+
+<p>A noter que cette méthode fonctionne évidemment pour les autres versions de Python. Utile si vous devez tester votre code sur une version spécifique de Python non packagée dans votre système de paquet.</p>
+                    </div>
+                </section>
+                
                 <h1 class="content-subhead">24 Nov 2015, 23:18</h1>
                 <section class="post">
                     <header class="post-header">

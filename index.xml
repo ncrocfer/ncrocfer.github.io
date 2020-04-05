@@ -6,10 +6,22 @@
     <description>Recent content on Nicolas Crocfer</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>fr-FR</language>
-    <lastBuildDate>Sun, 09 Feb 2020 13:04:09 +0100</lastBuildDate>
+    <lastBuildDate>Sun, 05 Apr 2020 18:41:22 +0200</lastBuildDate>
     
 	<atom:link href="https://ncrocfer.github.io/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Utiliser JSONB sous PostgreSQL avec Sqlalchemy</title>
+      <link>https://ncrocfer.github.io/posts/sqlalchemy-postgresql-jsonb/</link>
+      <pubDate>Sun, 05 Apr 2020 18:41:22 +0200</pubDate>
+      
+      <guid>https://ncrocfer.github.io/posts/sqlalchemy-postgresql-jsonb/</guid>
+      <description>Je travaille en ce moment sur l&amp;rsquo;opensource de Saucs (qui va d&amp;rsquo;ailleurs être renommé, j&amp;rsquo;en parlerai plus tard) et notamment sur la partie performance des requêtes SQL.
+Si vous ne connaissez pas Saucs il s&amp;rsquo;agit d&amp;rsquo;un outil permettant de s&amp;rsquo;abonner à des vendeurs et leurs produits puis d&amp;rsquo;être notifié en cas de nouvelle CVE (ou de mise à jour d&amp;rsquo;une ancienne).
+Sans JSONB Voici le schema actuel :
+$ \dt List of relations Schema | Name | Type | Owner --------+-----------------+-------+---------- … public | products | table | ncrocfer public | products_cves | table | ncrocfer public | users | table | ncrocfer public | users_products | table | ncrocfer public | users_vendors | table | ncrocfer public | vendors | table | ncrocfer public | vendors_cves | table | ncrocfer  Une table par vendors et products, puis des tables d&amp;rsquo;associations avec les CVES.</description>
+    </item>
     
     <item>
       <title>Celery : utiliser le filesystem comme broker et result backend</title>

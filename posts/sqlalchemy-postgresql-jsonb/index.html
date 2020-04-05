@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Utiliser JSONB sous PostgreSQL avec Sqlalchemy &middot; Nicolas Crocfer</title>
+
+    <meta name="description" content="">
+
+    <meta name="generator" content="Hugo 0.42.2" />
+    <meta name="twitter:card" content="summary">
+    
+    <meta name="twitter:title" content="Utiliser JSONB sous PostgreSQL avec Sqlalchemy &middot; Nicolas Crocfer">
+    <meta name="twitter:description" content="">
+
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Utiliser JSONB sous PostgreSQL avec Sqlalchemy &middot; Nicolas Crocfer">
+    <meta property="og:description" content="">
+
+    <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Oxygen:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/pure-min.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/grids-responsive-min.css">
+
+    <link rel="stylesheet" href="https://ncrocfer.github.io/css/all.min.css">
+    <link rel="stylesheet" href="https://ncrocfer.github.io/css/flexboxgrid.min.css">
+    <link rel="stylesheet" href="https://ncrocfer.github.io/css/custom.css">
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <link rel="alternate" type="application/rss+xml" title="Nicolas Crocfer" href="https://ncrocfer.github.io/index.xml" />
+</head>
+<body>
+
+
+
+<div id="layout" class="pure-g">
+    <div class="sidebar pure-u-1 pure-u-md-1-4">
+    <div class="header">
+        <hgroup>
+            <h1 class="brand-title"><a href="https://ncrocfer.github.io">Nicolas Crocfer</a></h1>
+            <h2 class="brand-tagline"> Python Developer </h2>
+        </hgroup>
+
+        <nav class="nav">
+            <ul class="nav-list">
+                
+                <li class="nav-item">
+                    <a class="pure-button" href="https://twitter.com/ncrocfer">
+                        <i class="fa fa-twitter"></i> Twitter
+                    </a>
+                </li>
+                
+                
+                <li class="nav-item">
+                    <a class="pure-button" href="https://github.com/ncrocfer">
+                        <i class="fa fa-github-alt"></i> Github
+                    </a>
+                </li>
+                
+                
+                
+                <li class="nav-item">
+                    <a class="pure-button" href="https://www.linkedin.com/in/nicolascrocfer">
+                        <i class="fa fa-linkedin"></i> LinkedIn
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="pure-button" href="https://ncrocfer.github.io/index.xml">
+                        <i class="fa fa-rss"></i> rss
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+    <div class="content pure-u-1 pure-u-md-3-4">
+        <div>
+            
+            <div class="posts">
+                <h1 class="content-subhead">05 Apr 2020, 18:41</h1>
+                <section class="post">
+                    <header class="post-header">
+
+                        <a href="https://ncrocfer.github.io/posts/sqlalchemy-postgresql-jsonb/" class="post-title">Utiliser JSONB sous PostgreSQL avec Sqlalchemy</a>
+
+                        <p class="post-meta">
+                            
+                            
+                        </p>
+                    </header>
+                    
+                    <div class="post-description">
+                        
+
+<p>Je travaille en ce moment sur l&rsquo;opensource de Saucs (qui va d&rsquo;ailleurs être renommé, j&rsquo;en parlerai plus tard) et notamment sur la partie performance des requêtes SQL.</p>
+
+<p>Si vous ne connaissez pas Saucs il s&rsquo;agit d&rsquo;un outil permettant de s&rsquo;abonner à des vendeurs et leurs produits puis d&rsquo;être notifié en cas de nouvelle CVE (ou de mise à jour d&rsquo;une ancienne).</p>
+
+<h1 id="sans-jsonb">Sans JSONB</h1>
+
+<p>Voici le schema actuel :</p>
+
+<pre><code>$ \dt
+              List of relations
+ Schema |      Name       | Type  |  Owner
+--------+-----------------+-------+----------
+ …
+ public | products        | table | ncrocfer
+ public | products_cves   | table | ncrocfer
+ public | users           | table | ncrocfer
+ public | users_products  | table | ncrocfer
+ public | users_vendors   | table | ncrocfer
+ public | vendors         | table | ncrocfer
+ public | vendors_cves    | table | ncrocfer
+</code></pre>
+
+<p>Une table par vendors et products, puis des tables d&rsquo;associations avec les CVES. De même nous avons des tables d&rsquo;association pour faire le lien entre les utilisateurs et leurs abonnements.</p>
+
+<p>Les soucis de performance se faisaient ressentir sur certaines requêtes, notamment sur la page d&rsquo;accueil de l&rsquo;utilisateur :</p>
+
+<img src="/images/jsonb-saucs-1.png" alt="" style="display: block; margin-left: auto; margin-right: auto; width: 80%;">
+
+<p>Tout d&rsquo;abord la requête permettant de retrouver les CVE en fonction des souscriptions de l&rsquo;utilisateur était assez gourmande :</p>
+
+<pre><code class="language-python">Cve.query.filter(
+    or_(
+        Cve.vendors.any(Vendor.users.any(User.id == current_user.id)),
+        Cve.products.any(Product.users.any(User.id == current_user.id)),
+    )
+)
+</code></pre>
+
+<p>La preuve via l&rsquo;extension Flask-DebugToolbar :</p>
+
+<img src="/images/jsonb-saucs-2.png" alt="" style="display: block; margin-left: auto; margin-right: auto; width: 80%;">
+
+<p>Autre problème comme vous pouvez le constater : la page affiche un extrait des vendeurs et produits affectés par chaque CVE, ce qui implique beaucoup de petites requêtes. Elles ne sont certes pas très gourmandes, mais mis bout à bout le chargement de la page devenait très long.</p>
+
+<h1 id="avec-jsonb">Avec JSONB</h1>
+
+<p>C&rsquo;est durant mon refacto que j&rsquo;ai vraiment découvert l&rsquo;utilisation de JSONB sous PostgreSQL. L&rsquo;idée était de ne pas stocker ces informations dans des tables d&rsquo;association mais directement dans la table CVE.</p>
+
+<p>Plusieurs avantages à cela :</p>
+
+<ul>
+<li>la taille de la database est réduite (à titre d&rsquo;exemple la taille <strong>products_cves</strong> contenait environ 350k items)</li>
+<li>la mise à jour des CVE est simplifiée (il fallait jusqu&rsquo;alors vérifier si l&rsquo;association existait avant de l&rsquo;insérer)</li>
+<li>et les performances sont évidemment améliorées</li>
+</ul>
+
+<p>La déclaration sous SQLAlchemy d&rsquo;une colonne de type JSONB se fait simplement de la manière suivante :</p>
+
+<pre><code class="language-python">from sqlalchemy.dialects.postgresql import JSONB
+
+class Cve(BaseModel):
+    __tablename__ = &quot;cves&quot;
+    ...
+    vendors = db.Column(JSONB)
+
+    __table_args__ = (db.Index('cves_vendors_gin_idx', vendors, postgresql_using=&quot;gin&quot;),)
+</code></pre>
+
+<p>L&rsquo;index de type <strong>GIN</strong> est très important car il nous fera gagner là aussi un max de perf. Seul inconvénient : l&rsquo;insertion est <em>apparemment</em> un tout petit peu plus lente. Je dis <em>apparemment</em> car c&rsquo;est ce que j&rsquo;ai lu dans la doc mais je ne l&rsquo;ai pas du tout ressenti durant mes tests.</p>
+
+<p>Pour info mes recherches et mes tests sont partis de ce <a href="https://stackoverflow.com/questions/19925641/check-if-a-postgres-json-array-contains-a-string">thread StackOverflow</a>.</p>
+
+<p>Après modification du script d&rsquo;import les données ressemblent désormais à cela :</p>
+
+<pre><code>$ SELECT cve_id, vendors FROM cves;
+...
+CVE-2020-3850  | [&quot;apple&quot;, &quot;apple-OA-mac_os_x&quot;]
+CVE-2020-10865 | [&quot;avast&quot;, &quot;avast-OA-antivirus&quot;, &quot;microsoft&quot;, &quot;microsoft-OA-windows&quot;]
+...
+</code></pre>
+
+<p>La chaîne <strong>-OA-</strong> est utilisée comme séparateur afin d&rsquo;inclure les produits dans cette liste (un produit est lié à un vendeur, sans cela des conflits peuvent apparaître car plusieurs vendeurs peuvent avoir les mêmes noms de produits).</p>
+
+<p>La requête permettant d&rsquo;afficher les CVE propres à l&rsquo;utilisateur devient alors :</p>
+
+<pre><code class="language-python">from sqlalchemy.dialects.postgresql import array
+
+Cve.query.filter(Cve.vendors.has_any(array(current_user.vendors)))
+</code></pre>
+
+<p>Les performances, notamment grâce à l&rsquo;index, deviennent vraiment apréciables. De plus nous évitons la multitude de requêtes liées aux vendeurs car l&rsquo;information est déjà portée par la table CVE :</p>
+
+<img src="/images/jsonb-saucs-3.png" alt="" style="display: block; margin-left: auto; margin-right: auto; width: 80%;">
+
+<h1 id="conclusion">Conclusion</h1>
+
+<p>Comme vous pouvez le voir sur les screenshots je suis passé de plusieurs secondes à quelques centaines de millisecondes. Qui plus est la mise à jour des CVE est vraiment simplifiée.</p>
+
+<p>Nous avons utilisé la méthode <strong>has_any()</strong> qui permet de renvoyer chaque row répondant à au moins 1 critère. Dans le cas où nous n&rsquo;aurions qu&rsquo;un seul item à rechercher (&ldquo;donnes moi toutes les CVE lié au vendeur debian&rdquo;) nous pouvons utiliser la méthode <strong>contains</strong> :</p>
+
+<pre><code class="language-python">Cve.query.filter(Cve.vendors.contains([&quot;debian&quot;]))
+</code></pre>
+
+<p>Pour finir il est tout de même important de noter que ce refacto amène un changement majeur : <strong>Saucs ne fonctionnera plus que sur PostgreSQL</strong>. J&rsquo;ai décidé d&rsquo;accepter cette contrainte afin d&rsquo;améliorer les performances, notre prod tournait déjà sur PG et SQLite n&rsquo;était utilisé que pour les tests. Il faudra désormais une seconde instance pour les lancer, mais ce n&rsquo;est pas très grave.</p>
+
+<p>Et si demain quelqu&rsquo;un trouve une meilleure solution je suis clairement preneur, le projet va devenir opensource et il sera donc bientôt possible de contribuer directement au code :)</p>
+
+                    </div>
+                    
+                </section>
+            </div>
+            <div class="footer">
+    <div class="pure-menu pure-menu-horizontal pure-menu-open">
+        <ul>
+            <li>Powered by <a class="hugo" href="https://gohugo.io/" target="_blank">hugo</a></li>
+        </ul>
+    </div>
+</div>
+<script src="https://ncrocfer.github.io/js/all.min.js"></script>
+
+        </div>
+    </div>
+</div>
+
+
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-65778407-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+
+</body>
+</html>

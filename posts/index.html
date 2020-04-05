@@ -80,6 +80,131 @@
             
             <div class="posts">
                 
+                <h1 class="content-subhead">05 Apr 2020, 18:41</h1>
+                <section class="post">
+                    <header class="post-header">
+
+                        <a href="https://ncrocfer.github.io/posts/sqlalchemy-postgresql-jsonb/" class="post-title">Utiliser JSONB sous PostgreSQL avec Sqlalchemy</a>
+
+                        <p class="post-meta">
+                            
+                            
+                        </p>
+                    </header>
+
+                    <div class="post-description">
+                        
+
+<p>Je travaille en ce moment sur l&rsquo;opensource de Saucs (qui va d&rsquo;ailleurs être renommé, j&rsquo;en parlerai plus tard) et notamment sur la partie performance des requêtes SQL.</p>
+
+<p>Si vous ne connaissez pas Saucs il s&rsquo;agit d&rsquo;un outil permettant de s&rsquo;abonner à des vendeurs et leurs produits puis d&rsquo;être notifié en cas de nouvelle CVE (ou de mise à jour d&rsquo;une ancienne).</p>
+
+<h1 id="sans-jsonb">Sans JSONB</h1>
+
+<p>Voici le schema actuel :</p>
+
+<pre><code>$ \dt
+              List of relations
+ Schema |      Name       | Type  |  Owner
+--------+-----------------+-------+----------
+ …
+ public | products        | table | ncrocfer
+ public | products_cves   | table | ncrocfer
+ public | users           | table | ncrocfer
+ public | users_products  | table | ncrocfer
+ public | users_vendors   | table | ncrocfer
+ public | vendors         | table | ncrocfer
+ public | vendors_cves    | table | ncrocfer
+</code></pre>
+
+<p>Une table par vendors et products, puis des tables d&rsquo;associations avec les CVES. De même nous avons des tables d&rsquo;association pour faire le lien entre les utilisateurs et leurs abonnements.</p>
+
+<p>Les soucis de performance se faisaient ressentir sur certaines requêtes, notamment sur la page d&rsquo;accueil de l&rsquo;utilisateur :</p>
+
+<img src="/images/jsonb-saucs-1.png" alt="" style="display: block; margin-left: auto; margin-right: auto; width: 80%;">
+
+<p>Tout d&rsquo;abord la requête permettant de retrouver les CVE en fonction des souscriptions de l&rsquo;utilisateur était assez gourmande :</p>
+
+<pre><code class="language-python">Cve.query.filter(
+    or_(
+        Cve.vendors.any(Vendor.users.any(User.id == current_user.id)),
+        Cve.products.any(Product.users.any(User.id == current_user.id)),
+    )
+)
+</code></pre>
+
+<p>La preuve via l&rsquo;extension Flask-DebugToolbar :</p>
+
+<img src="/images/jsonb-saucs-2.png" alt="" style="display: block; margin-left: auto; margin-right: auto; width: 80%;">
+
+<p>Autre problème comme vous pouvez le constater : la page affiche un extrait des vendeurs et produits affectés par chaque CVE, ce qui implique beaucoup de petites requêtes. Elles ne sont certes pas très gourmandes, mais mis bout à bout le chargement de la page devenait très long.</p>
+
+<h1 id="avec-jsonb">Avec JSONB</h1>
+
+<p>C&rsquo;est durant mon refacto que j&rsquo;ai vraiment découvert l&rsquo;utilisation de JSONB sous PostgreSQL. L&rsquo;idée était de ne pas stocker ces informations dans des tables d&rsquo;association mais directement dans la table CVE.</p>
+
+<p>Plusieurs avantages à cela :</p>
+
+<ul>
+<li>la taille de la database est réduite (à titre d&rsquo;exemple la taille <strong>products_cves</strong> contenait environ 350k items)</li>
+<li>la mise à jour des CVE est simplifiée (il fallait jusqu&rsquo;alors vérifier si l&rsquo;association existait avant de l&rsquo;insérer)</li>
+<li>et les performances sont évidemment améliorées</li>
+</ul>
+
+<p>La déclaration sous SQLAlchemy d&rsquo;une colonne de type JSONB se fait simplement de la manière suivante :</p>
+
+<pre><code class="language-python">from sqlalchemy.dialects.postgresql import JSONB
+
+class Cve(BaseModel):
+    __tablename__ = &quot;cves&quot;
+    ...
+    vendors = db.Column(JSONB)
+
+    __table_args__ = (db.Index('cves_vendors_gin_idx', vendors, postgresql_using=&quot;gin&quot;),)
+</code></pre>
+
+<p>L&rsquo;index de type <strong>GIN</strong> est très important car il nous fera gagner là aussi un max de perf. Seul inconvénient : l&rsquo;insertion est <em>apparemment</em> un tout petit peu plus lente. Je dis <em>apparemment</em> car c&rsquo;est ce que j&rsquo;ai lu dans la doc mais je ne l&rsquo;ai pas du tout ressenti durant mes tests.</p>
+
+<p>Pour info mes recherches et mes tests sont partis de ce <a href="https://stackoverflow.com/questions/19925641/check-if-a-postgres-json-array-contains-a-string">thread StackOverflow</a>.</p>
+
+<p>Après modification du script d&rsquo;import les données ressemblent désormais à cela :</p>
+
+<pre><code>$ SELECT cve_id, vendors FROM cves;
+...
+CVE-2020-3850  | [&quot;apple&quot;, &quot;apple-OA-mac_os_x&quot;]
+CVE-2020-10865 | [&quot;avast&quot;, &quot;avast-OA-antivirus&quot;, &quot;microsoft&quot;, &quot;microsoft-OA-windows&quot;]
+...
+</code></pre>
+
+<p>La chaîne <strong>-OA-</strong> est utilisée comme séparateur afin d&rsquo;inclure les produits dans cette liste (un produit est lié à un vendeur, sans cela des conflits peuvent apparaître car plusieurs vendeurs peuvent avoir les mêmes noms de produits).</p>
+
+<p>La requête permettant d&rsquo;afficher les CVE propres à l&rsquo;utilisateur devient alors :</p>
+
+<pre><code class="language-python">from sqlalchemy.dialects.postgresql import array
+
+Cve.query.filter(Cve.vendors.has_any(array(current_user.vendors)))
+</code></pre>
+
+<p>Les performances, notamment grâce à l&rsquo;index, deviennent vraiment apréciables. De plus nous évitons la multitude de requêtes liées aux vendeurs car l&rsquo;information est déjà portée par la table CVE :</p>
+
+<img src="/images/jsonb-saucs-3.png" alt="" style="display: block; margin-left: auto; margin-right: auto; width: 80%;">
+
+<h1 id="conclusion">Conclusion</h1>
+
+<p>Comme vous pouvez le voir sur les screenshots je suis passé de plusieurs secondes à quelques centaines de millisecondes. Qui plus est la mise à jour des CVE est vraiment simplifiée.</p>
+
+<p>Nous avons utilisé la méthode <strong>has_any()</strong> qui permet de renvoyer chaque row répondant à au moins 1 critère. Dans le cas où nous n&rsquo;aurions qu&rsquo;un seul item à rechercher (&ldquo;donnes moi toutes les CVE lié au vendeur debian&rdquo;) nous pouvons utiliser la méthode <strong>contains</strong> :</p>
+
+<pre><code class="language-python">Cve.query.filter(Cve.vendors.contains([&quot;debian&quot;]))
+</code></pre>
+
+<p>Pour finir il est tout de même important de noter que ce refacto amène un changement majeur : <strong>Saucs ne fonctionnera plus que sur PostgreSQL</strong>. J&rsquo;ai décidé d&rsquo;accepter cette contrainte afin d&rsquo;améliorer les performances, notre prod tournait déjà sur PG et SQLite n&rsquo;était utilisé que pour les tests. Il faudra désormais une seconde instance pour les lancer, mais ce n&rsquo;est pas très grave.</p>
+
+<p>Et si demain quelqu&rsquo;un trouve une meilleure solution je suis clairement preneur, le projet va devenir opensource et il sera donc bientôt possible de contribuer directement au code :)</p>
+
+                    </div>
+                </section>
+                
                 <h1 class="content-subhead">09 Feb 2020, 13:04</h1>
                 <section class="post">
                     <header class="post-header">
@@ -1355,54 +1480,6 @@ c.InteractiveShellApp.exec_lines.append('%autoreload 2')
 </code></pre>
 
 <p>L&rsquo;autoreload des modules importés s&rsquo;effectuera désormais automatiquement !</p>
-                    </div>
-                </section>
-                
-                <h1 class="content-subhead">27 Nov 2015, 00:10</h1>
-                <section class="post">
-                    <header class="post-header">
-
-                        <a href="https://ncrocfer.github.io/posts/installer-python-3-5-1rc1/" class="post-title">Installer Python 3 5 1rc1</a>
-
-                        <p class="post-meta">
-                            
-                            
-                        </p>
-                    </header>
-
-                    <div class="post-description">
-                        <p>La version 3.5.1rc1 de Python est sortie cette semaine, incluant <a href="https://docs.python.org/3.5/whatsnew/changelog.html#python-3-5-1-release-candidate-1">de nombreuses corrections</a>.</p>
-
-<p>Voici comment l&rsquo;installer si vous souhaitez la tester. Sur mon laptop j&rsquo;ai un répertoire dans lequel je place les sources des différentes versions de Python (<strong>~/dev/python/src</strong>), et un autre dans lequel je compile les binaires (<strong>~/dev/python/bin</strong>).</p>
-
-<p></p>
-
-<p>On commence par télécharger les sources :</p>
-
-<pre><code class="language-bash">ncrocfer@home:~$ cd ~/dev/python/src
-ncrocfer@home:~/dev/python/src$ wget https://www.python.org/ftp/python/3.5.1/Python-3.5.1rc1.tgz
-ncrocfer@home:~/dev/python/src$ tar xzvf Python-3.5.1rc1.tgz
-ncrocfer@home:~/dev/python/src$ cd Python-3.5.1rc1/
-</code></pre>
-
-<p>On compile ensuite les sources, en choisissant le répertoire de destination souhaité :</p>
-
-<pre><code class="language-bash">ncrocfer@home:~/dev/python/src/Python-3.5.1rc1$ ./configure --prefix=&quot;/home/ncrocfer/dev/python/bin/3.5.1rc1/&quot;
-ncrocfer@home:~/dev/python/src/Python-3.5.1rc1$ make
-ncrocfer@home:~/dev/python/src/Python-3.5.1rc1$ make install
-</code></pre>
-
-<p>Vous pouvez désormais tester Python 3.5.1rc1 :</p>
-
-<pre><code class="language-bash">ncrocfer@home:~$ cd ~/dev/python/bin/3.5.1rc1/bin/
-ncrocfer@home:~/dev/python/bin/3.5.1rc1/bin$ ./python3
-Python 3.5.1rc1 (default, Nov 27 2015, 00:32:21)
-[GCC 4.8.4] on linux
-Type &quot;help&quot;, &quot;copyright&quot;, &quot;credits&quot; or &quot;license&quot; for more information.
-&gt;&gt;&gt;
-</code></pre>
-
-<p>A noter que cette méthode fonctionne évidemment pour les autres versions de Python. Utile si vous devez tester votre code sur une version spécifique de Python non packagée dans votre système de paquet.</p>
                     </div>
                 </section>
                 
